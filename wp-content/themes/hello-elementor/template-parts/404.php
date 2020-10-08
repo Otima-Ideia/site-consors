@@ -9,14 +9,19 @@ if ( ! defined( 'ABSPATH' ) ) {
 	exit; // Exit if accessed directly.
 }
 ?>
+<?= do_shortcode('[xyz-ihs snippet="header"]')?>
 <main class="site-main" role="main">
-	<?php if ( apply_filters( 'hello_elementor_page_title', true ) ) : ?>
-		<header class="page-header">
-			<h1 class="entry-title"><?php esc_html_e( 'The page can&rsquo;t be found.', 'hello-elementor' ); ?></h1>
-		</header>
-	<?php endif; ?>
-	<div class="page-content">
-		<p><?php esc_html_e( 'It looks like nothing was found at this location.', 'hello-elementor' ); ?></p>
-	</div>
+	<div class="container-fluid">
+        <div class="row">
+            <div class="col-lg-12 text-center align-items-center">
+                <h1 class="h3 mt-5">
+                    Ops! página não encontrada
+                </h1>
+                <p class="text-center text-muted">Infelizmente não encontramos a página solicitada, tente retorar a <a href="/">Home</a>.</p>
+                <img class="img-fluid" src="http://consors-desenvolvimento.otimaideia.com.br/wp-content/uploads/2020/09/fogg-page-not-found-1.png" alt="" srcset="" width="500">
+            </div>
+        </div>
+    </div>
 
 </main>
+<?= do_shortcode('	[xyz-ihs snippet="footer"]')?>

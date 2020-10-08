@@ -6,17 +6,24 @@
  */
 
 if ( ! defined( 'ABSPATH' ) ) {
-	exit; // Exit if accessed directly.
+	exit; // Exit if accessed directly.<?php comments_template(); 
 }
 ?>
+
 <?php
 while ( have_posts() ) : the_post();
 	?>
+<?= do_shortcode('[xyz-ihs snippet="header"]')?>
 
 <main <?php post_class( 'site-main' ); ?> role="main">
 	<?php if ( apply_filters( 'hello_elementor_page_title', true ) ) : ?>
+	<?php
+		if ( function_exists('yoast_breadcrumb') ) {
+		  yoast_breadcrumb( '<p class="pt-5" id="breadcrumbs">','</p>' );
+		}
+	?>
 		<header class="page-header">
-			<?php the_title( '<h1 class="entry-title">', '</h1>' ); ?>
+			<?php the_title( '<h1 class="entry-title mt-2">', '</h1>' ); ?>
 		</header>
 	<?php endif; ?>
 	<div class="page-content">
@@ -27,8 +34,9 @@ while ( have_posts() ) : the_post();
 		<?php wp_link_pages(); ?>
 	</div>
 
-	<?php comments_template(); ?>
+	
 </main>
+<?= do_shortcode('	[xyz-ihs snippet="footer"]')?>
 
 	<?php
 endwhile;

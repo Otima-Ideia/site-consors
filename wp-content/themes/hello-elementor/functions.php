@@ -11,6 +11,18 @@ if ( ! defined( 'ABSPATH' ) ) {
 
 define( 'HELLO_ELEMENTOR_VERSION', '2.2.0' );
 
+function my_login_logo() { ?>
+<style type="text/css">
+	#login h1 a, .login h1 a {
+		background-image: url(<?php echo get_stylesheet_directory_uri(); ?>/assets/images/logo-otimaideia.png);
+		background-size: auto;
+		width: auto;
+		height: 70px;
+	}
+</style>
+<?php }
+add_action( 'login_enqueue_scripts', 'my_login_logo' );
+
 if ( ! isset( $content_width ) ) {
 	$content_width = 800; // Pixels.
 }
@@ -179,34 +191,69 @@ if ( ! function_exists( 'hello_elementor_body_open' ) ) {
 	}
 }
 function wp_get_menu_array($current_menu) {
- 
-    $array_menu = wp_get_nav_menu_items($current_menu);
-    $menu = array();
-    foreach ($array_menu as $m) {
-        if (empty($m->menu_item_parent)) {
-            $menu[$m->ID] = array();
-            $menu[$m->ID]['ID']      =   $m->ID;
-            $menu[$m->ID]['title']       =   $m->title;
-            $menu[$m->ID]['url']         =   $m->url;
-            $menu[$m->ID]['children']    =   array();
-        }
-    }
-    $submenu = array();
-    foreach ($array_menu as $m) {
-        if ($m->menu_item_parent) {
-            $submenu[$m->ID] = array();
-            $submenu[$m->ID]['ID']       =   $m->ID;
-            $submenu[$m->ID]['title']    =   $m->title;
-            $submenu[$m->ID]['url']  =   $m->url;
-            $menu[$m->menu_item_parent]['children'][$m->ID] = $submenu[$m->ID];
-        }
-    }
-    return $menu;
+
+	$array_menu = wp_get_nav_menu_items($current_menu);
+	$menu = array();
+	foreach ($array_menu as $m) {
+		if (empty($m->menu_item_parent)) {
+			$menu[$m->ID] = array();
+			$menu[$m->ID]['ID']      =   $m->ID;
+			$menu[$m->ID]['title']       =   $m->title;
+			$menu[$m->ID]['url']         =   $m->url;
+			$menu[$m->ID]['children']    =   array();
+		}
+	}
+	$submenu = array();
+	foreach ($array_menu as $m) {
+		if ($m->menu_item_parent) {
+			$submenu[$m->ID] = array();
+			$submenu[$m->ID]['ID']       =   $m->ID;
+			$submenu[$m->ID]['title']    =   $m->title;
+			$submenu[$m->ID]['url']  =   $m->url;
+			$menu[$m->menu_item_parent]['children'][$m->ID] = $submenu[$m->ID];
+		}
+	}
+	return $menu;
 }
 
 function simpletheme_script(){
 	wp_enqueue_style("bs_css", "https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/css/bootstrap.min.css");
 	wp_enqueue_script("bs_js", "https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/js/bootstrap.min.js");
-	
+	/*wp_enqueue_script("jquery_countTo", get_stylesheet_directory_uri() . '/assets/js/jquery.countTo.js', array( 'jquery' ));*/
+
 }
 add_action("wp_enqueue_scripts","simpletheme_script");
+function wpdocs_get_paginated_links( $query ) {
+	// When we're on page 1, 'paged' is 0, but we're counting from 1,
+	// so we're using max() to get 1 instead of 0
+	$currentPage = max( 1, get_query_var( 'paged', 1 ) );
+
+	// This creates an array with all available page numbers, if there
+	// is only *one* page, max_num_pages will return 0, so here we also
+	// use the max() function to make sure we'll always get 1
+	$pages = range( 1, max( 1, $query->max_num_pages ) );
+
+	// Now, map over $pages and return the page number, the url to that
+	// page and a boolean indicating whether that number is the current page
+	return array_map( function( $page ) use ( $currentPage ) {
+		return ( object ) array(
+			"isCurrent" => $page == $currentPage,
+			"page" => $page,
+			"url" => get_pagenum_link( $page )
+		);
+	}, $pages );
+}
+add_action("wp_enqueue_scripts","wpdocs_get_paginated_links");
+
+add_filter( 'wpseo_breadcrumb_links', 'my_custom_breadcrumb_links' );
+function my_custom_breadcrumb_links( $links ) {
+
+	$breadcrumbs[] = array(
+		'url' => home_url('/blog-do-consorcio'),
+		'text' => 'Blog do Consórcio',
+	);
+
+	array_splice( $links, 0, 0, $breadcrumbs ); //Prepend array to begin
+
+	return $links;
+}
