@@ -219,7 +219,11 @@ function wp_get_menu_array($current_menu) {
 function simpletheme_script(){
 	wp_enqueue_style("bs_css", "https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/css/bootstrap.min.css");
 	wp_enqueue_script("bs_js", "https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/js/bootstrap.min.js");
-	/*wp_enqueue_script("jquery_countTo", get_stylesheet_directory_uri() . '/assets/js/jquery.countTo.js', array( 'jquery' ));*/
+	wp_enqueue_script("jQuery", "https://code.jquery.com/jquery-3.5.1.slim.min.js");
+	wp_enqueue_script("jquery_countTo", get_stylesheet_directory_uri() . '/assets/js/jquery.countTo.js', array( 'jquery' ));
+	wp_enqueue_script("maskedInput", "https://cdnjs.cloudflare.com/ajax/libs/jquery.maskedinput/1.4.1/jquery.maskedinput.min.js");
+	wp_enqueue_style("Font-Awesome", "https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.1/css/all.min.css");
+
 
 }
 add_action("wp_enqueue_scripts","simpletheme_script");
@@ -244,6 +248,78 @@ function wpdocs_get_paginated_links( $query ) {
 	}, $pages );
 }
 add_action("wp_enqueue_scripts","wpdocs_get_paginated_links");
+
+function theme_xyz_header_metadata() {
+
+    // Post object if needed
+    // global $post;
+
+    // Page conditional if needed
+    // if( is_page() ){}
+
+  ?>
+
+    <meta charset="utf-8">
+	<meta http-equiv="X-UA-Compatible" content="IE=edge">
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+	<meta name="description" content="Quer vender seu consórcio? Nós da Consors compramos consórcios em andamento, sem intermediários. Temos a Melhor avaliação com Pagamento imediato">
+	<link rel="canonical" href="https://www.consors.com.br/">
+	<meta name="robots" content="all, index, follow">
+	<meta name="Googlebot" content="index,follow, all">
+	<meta name="MSNbot" content="index,follow, all">
+	<meta name="InktomiSlurp" content="index,follow, all">
+	<meta name="Unknownrobot" content="index,follow, all">
+	<meta name="rating" content="General">
+	<meta name="audience" content="all">
+	<meta name="og:region" content="São Paulo, SP/Brasil">
+	<meta name="geo.position" content="-23.5645925;-46.6471141">
+	<meta name="ICBM" content="-23.5645925;-46.6471141">
+	<meta name="geo.placename" content="São Paulo-SP">
+	<meta name="geo.region" content="SP-BR">
+	<meta name="distribution" content="global">
+	<meta name="copyright" content="Compra e Venda de Consórcios">
+	<meta name="twitter:card" content="summary_large_image">
+	<meta name="twitter:site" content="ConsorsOficial">
+	<meta name="twitter:title" content="Consors - Compra e Venda de Consórcios - Consors">
+	<meta name="twitter:description" content="Quer vender seu consórcio? Nós da Consors compramos consórcios em andamento, sem intermediários. Temos a Melhor avaliação com Pagamento imediato">
+	<meta name="twitter:url" content="https://www.consors.com.br/">
+	<meta name="twitter:creator" content="ConsorsOficial">
+	<meta name="twitter:image" content="https://www.consors.com.br/images/consors.jpg">
+	<meta property="fb:admins" content="1912255549015756">
+	<meta property="og:url" content="https://consors.com.br/">
+	<meta property="og:type" content="website">
+	<meta property="og:title" content="Consors - Compra e Venda de Consórcios - Consors">
+	<meta property="og:image" content="https://www.consors.com.br/images/consors.jpg">
+	<meta property="og:image:type" content="image/jpeg">
+	<meta property="og:image:width" content="520">
+	<meta property="og:image:height" content="272">
+	<meta property="og:image:alt" content="Consors - Compra e Venda de Consórcios">
+	<meta property="og:description" content="Quer vender seu consórcio? Nós da Consors compramos consórcios em andamento, sem intermediários. Temos a Melhor avaliação com Pagamento imediato">
+	<meta property="og:site_name" content="Consors - Compra e Venda de Consórcios - Consors">
+	<meta property="business:contact_data:street_address" content="R. Pirapitingui, 80 - Sala 108">
+	<meta property="business:contact_data:locality" content="SP">
+	<meta property="business:contact_data:region" content="São Paulo">
+	<meta property="geo.position" content="-23.5645925, -46.6471141">
+	<meta property="geo.region" content="São Paulo, SP">
+	<meta property="ICBM" content="-23.5645925, -46.6471141">
+	<meta property="business:contact_data:postal_code" content="01508-020">
+	<meta property="business:contact_data:country_name" content="Brasil">
+	<meta property="og:locale" content="pt_BR" />
+	<meta property="og:type" content="website" />
+	<meta property="og:title" content="Consors - Compra e Venda de Consórcios" />
+	<meta property="og:description" content="Compra e Venda de Consórcios" />
+	<meta property="og:url" content="https://www.consors.com.br/" />
+	<meta property="og:site_name" content="Consors" />
+	<meta name="twitter:card" content="summary_large_image" />
+	<link rel="icon" href="https://www.consors.com.br/antigo/wp-content/uploads/2020/04/cropped-favicon-32x32.png" sizes="32x32" />
+	<link rel="icon" href="https://www.consors.com.br/antigo/wp-content/uploads/2020/04/cropped-favicon-192x192.png" sizes="192x192" />
+	<link rel="apple-touch-icon" href="https://www.consors.com.br/antigo/wp-content/uploads/2020/04/cropped-favicon-180x180.png" />
+	<meta name="msapplication-TileImage" content="https://www.consors.com.br/antigo/wp-content/uploads/2020/04/cropped-favicon-270x270.png" />
+
+  <?php
+
+}
+add_action( 'wp_head', 'theme_xyz_header_metadata' );
 
 add_filter( 'wpseo_breadcrumb_links', 'my_custom_breadcrumb_links' );
 function my_custom_breadcrumb_links( $links ) {
