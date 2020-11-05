@@ -1,0 +1,184 @@
+/* Clean Tags -----------------------*/
+body, h1, h2, h3, h4, h5, h6, ul {padding:0; margin:0;}
+a {text-decoration:none; color:inherit;}
+img {border:none;}
+
+/* TAGS HTML ------------------------*/
+
+body {
+	background:#F6F6F6;
+	font-family:Arial, Helvetica, sans-serif;
+	padding:15px;
+	color:#333;
+}
+
+h1 {
+	font-size:22px;
+	font-weight:normal;
+	text-align:left;
+	margin-bottom:15px;
+}
+
+/* TEMPLATE -------------------------*/
+
+#navegacao {
+	text-align:left;
+	background:#E4EBED;
+	height:40px;
+	line-height:30px;
+	padding:2px;
+}
+
+#raiz {
+	background:url(../images/ico-pasta.png) no-repeat;
+	text-align:left;
+	padding-left:28px;
+	height:30px;
+	line-height:30px;
+	font-size:16px;
+	margin-bottom:12px;
+}
+
+	#raiz a {
+		text-decoration:underline; color:#000;		
+	}
+	
+	.upfile {
+		float:left;
+		margin-bottom:15px;
+		margin-top:6px;
+		background:#FFF;
+		font-family:Arial, Helvetica, sans-serif;
+		font-size:15px;
+		color:#00263E;
+		padding:2px;
+	}	
+	
+	#navegacao input.btn {
+		margin:7px 7px !important;
+	}	 
+	
+	.nova-pasta {
+			background:url(../images/ico-novapasta.png) 4px 5px no-repeat;
+			float:right;
+			line-height:27px;
+			font-size:12px;
+			text-transform:uppercase;
+			font-weight:bold;
+			cursor: pointer;
+			padding: 6px 8px 6px 32px;
+		}
+		
+	.nova-pasta:hover {background-color:#D8E1E7;}
+	
+	#arvore {
+		width: 200px;
+		float:left;
+		overflow:auto;
+		background:#CCC;
+		border:1px solid #E4EBED;
+		height:300px;
+	}
+	
+	#arquivos {
+		clear:both;
+		overflow:auto;
+		background:#FFF;
+		border:1px solid #E4EBED;
+		height:350px;
+		padding:20px 13px;
+	}
+	
+#footer {}
+
+	#busca {
+		float:left;
+		width:350px;
+		margin-top:5px;
+	}
+	
+		#busca input.txt {
+			float:left;
+			width:270px;
+			margin-top:2px;
+			background:#FFF;
+			border:1px solid #C1CFD9;
+			font-family:Arial, Helvetica, sans-serif;
+			font-size:15px;
+			color:#00263E;
+			padding:5px 0 5px 5px;
+			margin-right:8px;
+		}
+		
+		#busca input.btn {
+			margin-top:4px !important;
+		}
+	
+	#paginacao {
+		float:right;
+		line-height:45px;
+		font-size:12px;
+	}
+
+
+/* CLASSES --------------------------*/
+
+.file {
+	position: relative;
+	float:left;
+	padding:3px;
+	width:126px;
+	margin-right:8px;
+	margin-left:8px;
+	margin-bottom:14px;
+}
+
+.img-excluir{
+	position: absolute;
+	top:-8px;
+	right:-7px;
+	cursor: pointer;
+	z-index:999;
+}
+
+.btn {
+	float:left;
+	background:#8EA8B9;
+	color:#FFF;
+	padding:5px 8px;
+	font-weight:bold;
+	font-size:12px;
+	border:none;
+}
+
+	.imagem {
+		border:1px solid #DDD;
+		padding:4px;
+		width:116px;
+		height:116px;
+		text-align:center;
+		vertical-align:middle;
+		display:table-cell;
+	}
+
+	.imagem img {
+		max-width:116px;
+		max-height:116px;
+	}
+	
+	.texto {
+		max-width:116px !important;
+		font-size:12px !important;
+	}
+	
+	.barra {font-weight:bold;}
+	
+.active { 
+	background:#F2F2F2;
+	border-color:#09F;
+}
+
+.float {
+	float:left;
+	margin-right:10px;
+}

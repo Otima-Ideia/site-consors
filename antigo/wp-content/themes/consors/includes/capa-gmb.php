@@ -1,0 +1,1 @@
+<?php echo HTTP_HOST; ?>images/<?php echo $img_localbusiness?>.jpg

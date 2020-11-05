@@ -1,0 +1,154 @@
+/* HERO */
+
+#hero {
+	position: relative;
+	padding: 80px 0;
+	background: url(../img/hero-bg.jpg) no-repeat center;
+	background-size: cover;
+
+	#gradient {
+		position: absolute;
+		left: 0;
+		right: 0;
+		bottom: 0;
+		top: 0;
+		background: rgba(0, 0, 0, 0.6);
+	}
+
+	.hero-text {
+		
+		.title {
+			margin: 0 0 20px 0;
+			font-size: 42px;
+			color: @white;
+		}
+
+		.lead {
+			margin-bottom: 20px;
+			color: @white;
+		}
+
+		.features-list {
+
+			li {
+				line-height: 26px;
+
+				.fa {
+					color: @red;
+					margin-right: 5px;
+				}
+
+				span {
+					color: @white;
+				}
+			}
+		}
+	}
+
+	.hero-form {
+		padding: 30px 20px;
+		width: 85%;
+		float: right;
+		text-align: center;
+		background: rgba(30, 30, 30, 0.75);
+
+		@media (max-width: @screen-md) {
+			float: none;
+			width: 100%;
+			margin-top: 40px;
+		}
+
+		.default-form {
+
+			.form-title {
+				margin: 0 0 20px 0;
+				color: @white;
+			}
+
+			.declaration {
+				margin-top: 12px;
+				display: block;
+				color: @white;
+				font-size: 13px;
+			}
+
+			.field {
+				position: relative;
+				margin-right: 6px;
+				display: block;
+				width: 100%;
+
+				&:last-child {
+					margin-right: 0;
+				}
+
+				@media (max-width: @screen-sm) {
+					margin: 0 0 15px 0;
+					width: 100%;
+					display: block;
+				}
+
+				input {
+					margin-bottom: 20px;
+					width: 100%;
+					font-size: 13px;
+					border: transparent;
+					border-radius: 3px;
+					background: @white;
+				}
+
+				button {
+					width: 100%;
+					height: 41px;
+				}
+
+				select {
+					display: none;
+				}
+
+				.select-clone {
+					position: absolute;
+					margin-top: -2px;
+					left: 0;
+					right: 0;
+					display: none;
+					background: @white;
+					border-bottom-left-radius: 3px;
+					border-bottom-right-radius: 3px;
+					z-index: 999;
+
+					li {
+						padding: 10px 15px;
+						display: block;
+						text-align: left;
+						cursor: pointer;
+						border-bottom: 1px solid #e0e0e0;
+
+						&:last-child {
+							border-bottom: none;
+						}
+					}
+				}
+
+				.fa {
+					position: absolute;
+					right: 10px;
+					top: 12px;
+					color: #999;
+
+					&.fa-sort {
+						cursor: pointer;
+					}
+				}
+
+				button {
+					border-radius: 3px;
+
+					@media (max-width: @screen-sm) {
+						width: 100%;
+					}
+				}
+			}
+		}
+	}
+}

@@ -1,0 +1,1 @@
+<?php echo HTTP_HOST; ?>images/<?php echo $url_quem_somos?>.png
