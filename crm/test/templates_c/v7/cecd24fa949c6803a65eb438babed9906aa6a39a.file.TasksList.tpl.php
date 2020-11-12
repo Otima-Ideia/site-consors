@@ -1,4 +1,4 @@
-<?php /* Smarty version Smarty-3.1.7, created on 2020-05-19 15:49:14
+<?php /* Smarty version Smarty-3.1.7, created on 2020-11-05 21:11:23
          compiled from "/home/wwwconsorscom/public_html/crm/includes/runtime/../../layouts/v7/modules/Settings/Workflows/TasksList.tpl" */ ?>
 <?php /*%%SmartyHeaderCode:11831972035ec3fffabef127-73071940%%*/if(!defined('SMARTY_DIR')) exit('no direct access allowed');
 $_valid = $_smarty_tpl->decodeProperties(array (
@@ -7,7 +7,7 @@ $_valid = $_smarty_tpl->decodeProperties(array (
     'cecd24fa949c6803a65eb438babed9906aa6a39a' => 
     array (
       0 => '/home/wwwconsorscom/public_html/crm/includes/runtime/../../layouts/v7/modules/Settings/Workflows/TasksList.tpl',
-      1 => 1520586669,
+      1 => 1603288800,
       2 => 'file',
     ),
   ),
@@ -15,6 +15,8 @@ $_valid = $_smarty_tpl->decodeProperties(array (
   'function' => 
   array (
   ),
+  'version' => 'Smarty-3.1.7',
+  'unifunc' => 'content_5ec3fffac20a3',
   'variables' => 
   array (
     'TASK_LIST' => 0,
@@ -22,8 +24,6 @@ $_valid = $_smarty_tpl->decodeProperties(array (
     'TASK' => 0,
   ),
   'has_nocache_code' => false,
-  'version' => 'Smarty-3.1.7',
-  'unifunc' => 'content_5ec3fffac20a3',
 ),false); /*/%%SmartyHeaderCode%%*/?>
 <?php if ($_valid && !is_callable('content_5ec3fffac20a3')) {function content_5ec3fffac20a3($_smarty_tpl) {?>
 <div style="padding-left: 15px;"><div id="table-content" class="table-container"><table id="listview-table"  class="table <?php if ($_smarty_tpl->tpl_vars['TASK_LIST']->value=='0'){?>listview-table-norecords <?php }else{ ?> listview-table<?php }?> "><thead><tr class="listViewContentHeader"><th width="20%"><?php echo vtranslate('LBL_ACTIVE',$_smarty_tpl->tpl_vars['QUALIFIED_MODULE']->value);?>

@@ -1,4 +1,4 @@
-<?php /* Smarty version Smarty-3.1.7, created on 2020-05-19 19:34:46
+<?php /* Smarty version Smarty-3.1.7, created on 2020-11-05 21:05:40
          compiled from "/home/wwwconsorscom/public_html/crm/includes/runtime/../../layouts/v7/modules/EmailTemplates/ListViewActions.tpl" */ ?>
 <?php /*%%SmartyHeaderCode:16854122175ec434d60e5cc2-28337568%%*/if(!defined('SMARTY_DIR')) exit('no direct access allowed');
 $_valid = $_smarty_tpl->decodeProperties(array (
@@ -7,7 +7,7 @@ $_valid = $_smarty_tpl->decodeProperties(array (
     '6c51cd7eac17dcff5e9d87a5527cd5fe9bdade8c' => 
     array (
       0 => '/home/wwwconsorscom/public_html/crm/includes/runtime/../../layouts/v7/modules/EmailTemplates/ListViewActions.tpl',
-      1 => 1589850434,
+      1 => 1603288800,
       2 => 'file',
     ),
   ),
@@ -15,6 +15,8 @@ $_valid = $_smarty_tpl->decodeProperties(array (
   'function' => 
   array (
   ),
+  'version' => 'Smarty-3.1.7',
+  'unifunc' => 'content_5ec434d6213b3',
   'variables' => 
   array (
     'LISTVIEW_MASSACTIONS' => 0,
@@ -42,8 +44,6 @@ $_valid = $_smarty_tpl->decodeProperties(array (
     'DEFAULT_FILTER_URL' => 0,
   ),
   'has_nocache_code' => false,
-  'version' => 'Smarty-3.1.7',
-  'unifunc' => 'content_5ec434d6213b3',
 ),false); /*/%%SmartyHeaderCode%%*/?>
 <?php if ($_valid && !is_callable('content_5ec434d6213b3')) {function content_5ec434d6213b3($_smarty_tpl) {?>
 <?php $_smarty_tpl->tpl_vars['LISTVIEW_MASSACTIONS_1'] = new Smarty_variable(array(), null, 0);?><div id="listview-actions" class="listview-actions-container"><?php  $_smarty_tpl->tpl_vars['LIST_MASSACTION'] = new Smarty_Variable; $_smarty_tpl->tpl_vars['LIST_MASSACTION']->_loop = false;

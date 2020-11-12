@@ -1,4 +1,4 @@
-<?php /* Smarty version Smarty-3.1.7, created on 2020-05-19 15:49:14
+<?php /* Smarty version Smarty-3.1.7, created on 2020-11-05 21:11:23
          compiled from "/home/wwwconsorscom/public_html/crm/includes/runtime/../../layouts/v7/modules/Settings/Workflows/AdvanceFilterCondition.tpl" */ ?>
 <?php /*%%SmartyHeaderCode:9211671225ec3fffa909460-29281088%%*/if(!defined('SMARTY_DIR')) exit('no direct access allowed');
 $_valid = $_smarty_tpl->decodeProperties(array (
@@ -7,7 +7,7 @@ $_valid = $_smarty_tpl->decodeProperties(array (
     '7432a5c24607af7b3cb5a67861176637e3b0c978' => 
     array (
       0 => '/home/wwwconsorscom/public_html/crm/includes/runtime/../../layouts/v7/modules/Settings/Workflows/AdvanceFilterCondition.tpl',
-      1 => 1520586669,
+      1 => 1603288800,
       2 => 'file',
     ),
   ),
@@ -15,6 +15,8 @@ $_valid = $_smarty_tpl->decodeProperties(array (
   'function' => 
   array (
   ),
+  'version' => 'Smarty-3.1.7',
+  'unifunc' => 'content_5ec3fffa9c4fc',
   'variables' => 
   array (
     'NOCHOSEN' => 0,
@@ -42,8 +44,6 @@ $_valid = $_smarty_tpl->decodeProperties(array (
     'CONDITION' => 0,
   ),
   'has_nocache_code' => false,
-  'version' => 'Smarty-3.1.7',
-  'unifunc' => 'content_5ec3fffa9c4fc',
 ),false); /*/%%SmartyHeaderCode%%*/?>
 <?php if ($_valid && !is_callable('content_5ec3fffa9c4fc')) {function content_5ec3fffa9c4fc($_smarty_tpl) {?>
 <div class="row conditionRow" style="margin-bottom: 10px;"><span class="col-lg-4 col-md-4 col-sm-4"><select class="<?php if (empty($_smarty_tpl->tpl_vars['NOCHOSEN']->value)){?>select2<?php }?> col-lg-12" name="columnname" data-placeholder="<?php echo vtranslate('LBL_SELECT_FIELD',$_smarty_tpl->tpl_vars['QUALIFIED_MODULE']->value);?>

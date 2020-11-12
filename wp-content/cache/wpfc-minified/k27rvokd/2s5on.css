@@ -1,0 +1,10 @@
+.wp-block-group.lps-block .wp-block-group__inner-container {
+margin-top: 0;
+margin-bottom: 0;
+}
+.wp-block-group.lps-block.alignfull .wp-block-group__inner-container {
+margin: 0
+}
+.entry-content > .wp-block-group.lps-block {
+padding: 0;
+}

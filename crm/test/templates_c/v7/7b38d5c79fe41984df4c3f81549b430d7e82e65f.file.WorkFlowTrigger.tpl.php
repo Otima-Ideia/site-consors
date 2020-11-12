@@ -1,4 +1,4 @@
-<?php /* Smarty version Smarty-3.1.7, created on 2020-05-19 15:49:11
+<?php /* Smarty version Smarty-3.1.7, created on 2020-11-05 21:11:21
          compiled from "/home/wwwconsorscom/public_html/crm/includes/runtime/../../layouts/v7/modules/Settings/Workflows/WorkFlowTrigger.tpl" */ ?>
 <?php /*%%SmartyHeaderCode:1763538655ec3fff78cf806-31337857%%*/if(!defined('SMARTY_DIR')) exit('no direct access allowed');
 $_valid = $_smarty_tpl->decodeProperties(array (
@@ -7,7 +7,7 @@ $_valid = $_smarty_tpl->decodeProperties(array (
     '7b38d5c79fe41984df4c3f81549b430d7e82e65f' => 
     array (
       0 => '/home/wwwconsorscom/public_html/crm/includes/runtime/../../layouts/v7/modules/Settings/Workflows/WorkFlowTrigger.tpl',
-      1 => 1520586669,
+      1 => 1603288800,
       2 => 'file',
     ),
   ),
@@ -15,6 +15,8 @@ $_valid = $_smarty_tpl->decodeProperties(array (
   'function' => 
   array (
   ),
+  'version' => 'Smarty-3.1.7',
+  'unifunc' => 'content_5ec3fff79dafe',
   'variables' => 
   array (
     'WORKFLOW_MODEL_OBJ' => 0,
@@ -34,8 +36,6 @@ $_valid = $_smarty_tpl->decodeProperties(array (
     'ACTIVE_ADMIN' => 0,
   ),
   'has_nocache_code' => false,
-  'version' => 'Smarty-3.1.7',
-  'unifunc' => 'content_5ec3fff79dafe',
 ),false); /*/%%SmartyHeaderCode%%*/?>
 <?php if ($_valid && !is_callable('content_5ec3fff79dafe')) {function content_5ec3fff79dafe($_smarty_tpl) {?>
 <?php $_smarty_tpl->tpl_vars['EXECUTION_CONDITION'] = new Smarty_variable($_smarty_tpl->tpl_vars['WORKFLOW_MODEL_OBJ']->value->executionCondition, null, 0);?><input type="hidden" name="workflow_trigger" value="<?php echo $_smarty_tpl->tpl_vars['EXECUTION_CONDITION']->value;?>

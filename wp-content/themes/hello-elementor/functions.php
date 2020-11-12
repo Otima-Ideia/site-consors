@@ -311,10 +311,10 @@ function theme_xyz_header_metadata() {
 	<meta property="og:url" content="https://www.consors.com.br/" />
 	<meta property="og:site_name" content="Consors" />
 	<meta name="twitter:card" content="summary_large_image" />
-	<link rel="icon" href="https://www.consors.com.br/antigo/wp-content/uploads/2020/04/cropped-favicon-32x32.png" sizes="32x32" />
+	<!--<link rel="icon" href="https://www.consors.com.br/antigo/wp-content/uploads/2020/04/cropped-favicon-32x32.png" sizes="32x32" />
 	<link rel="icon" href="https://www.consors.com.br/antigo/wp-content/uploads/2020/04/cropped-favicon-192x192.png" sizes="192x192" />
 	<link rel="apple-touch-icon" href="https://www.consors.com.br/antigo/wp-content/uploads/2020/04/cropped-favicon-180x180.png" />
-	<meta name="msapplication-TileImage" content="https://www.consors.com.br/antigo/wp-content/uploads/2020/04/cropped-favicon-270x270.png" />
+	<meta name="msapplication-TileImage" content="https://www.consors.com.br/antigo/wp-content/uploads/2020/04/cropped-favicon-270x270.png" />-->
 
   <?php
 

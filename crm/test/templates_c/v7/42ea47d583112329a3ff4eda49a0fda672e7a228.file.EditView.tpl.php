@@ -1,4 +1,4 @@
-<?php /* Smarty version Smarty-3.1.7, created on 2020-05-19 15:49:11
+<?php /* Smarty version Smarty-3.1.7, created on 2020-11-05 21:11:20
          compiled from "/home/wwwconsorscom/public_html/crm/includes/runtime/../../layouts/v7/modules/Settings/Workflows/EditView.tpl" */ ?>
 <?php /*%%SmartyHeaderCode:8871202625ec3fff7852fe9-66395120%%*/if(!defined('SMARTY_DIR')) exit('no direct access allowed');
 $_valid = $_smarty_tpl->decodeProperties(array (
@@ -7,7 +7,7 @@ $_valid = $_smarty_tpl->decodeProperties(array (
     '42ea47d583112329a3ff4eda49a0fda672e7a228' => 
     array (
       0 => '/home/wwwconsorscom/public_html/crm/includes/runtime/../../layouts/v7/modules/Settings/Workflows/EditView.tpl',
-      1 => 1520586669,
+      1 => 1603288800,
       2 => 'file',
     ),
   ),
@@ -15,6 +15,8 @@ $_valid = $_smarty_tpl->decodeProperties(array (
   'function' => 
   array (
   ),
+  'version' => 'Smarty-3.1.7',
+  'unifunc' => 'content_5ec3fff78c58b',
   'variables' => 
   array (
     'WORKFLOW_MODEL' => 0,
@@ -33,8 +35,6 @@ $_valid = $_smarty_tpl->decodeProperties(array (
     'MODULE' => 0,
   ),
   'has_nocache_code' => false,
-  'version' => 'Smarty-3.1.7',
-  'unifunc' => 'content_5ec3fff78c58b',
 ),false); /*/%%SmartyHeaderCode%%*/?>
 <?php if ($_valid && !is_callable('content_5ec3fff78c58b')) {function content_5ec3fff78c58b($_smarty_tpl) {?>
 <div class="editViewPageDiv"><div class="col-sm-12 col-xs-12" id="EditView"><form name="EditWorkflow" action="index.php" method="post" id="workflow_edit" class="form-horizontal"><?php $_smarty_tpl->tpl_vars['WORKFLOW_MODEL_OBJ'] = new Smarty_variable($_smarty_tpl->tpl_vars['WORKFLOW_MODEL']->value->getWorkflowObject(), null, 0);?><input type="hidden" name="record" value="<?php echo $_smarty_tpl->tpl_vars['RECORDID']->value;?>
