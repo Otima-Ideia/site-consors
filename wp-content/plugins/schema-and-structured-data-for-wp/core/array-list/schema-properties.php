@@ -319,6 +319,12 @@ function saswp_get_fields_by_schema_type( $schema_id = null, $condition = null, 
                             'default' => get_permalink()
                     ),
                     array(
+                        'label'   => 'inLanguage',
+                        'id'      => 'saswp_blogposting_inlanguage_'.$schema_id,
+                        'type'    => 'text',
+                        'default' => get_bloginfo('language'),
+                   ),
+                    array(
                             'label' => 'Headline',
                             'id' => 'saswp_blogposting_headline_'.$schema_id,
                             'type' => 'text',
@@ -353,6 +359,11 @@ function saswp_get_fields_by_schema_type( $schema_id = null, $condition = null, 
                             'id' => 'saswp_blogposting_url_'.$schema_id,
                             'type' => 'text',
                             'default' => get_permalink()
+                    ),
+                    array(
+                        'label'   => 'Image',
+                        'id'      => 'saswp_blogposting_image_'.$schema_id,
+                        'type'    => 'media'                        
                     ),
                     array(
                             'label' => 'Date Published',
@@ -444,6 +455,12 @@ function saswp_get_fields_by_schema_type( $schema_id = null, $condition = null, 
                             'id' => 'saswp_newsarticle_image_'.$schema_id,
                             'type' => 'media',                            
                     ),    
+                    array(
+                        'label'   => 'inLanguage',
+                        'id'      => 'saswp_newsarticle_inlanguage_'.$schema_id,
+                        'type'    => 'text',
+                        'default' => get_bloginfo('language'),
+                    ),
                     array(
                             'label' => 'Headline',
                             'id' => 'saswp_newsarticle_headline_'.$schema_id,
@@ -715,6 +732,12 @@ function saswp_get_fields_by_schema_type( $schema_id = null, $condition = null, 
                                 'label' => 'Image',
                                 'id' => 'saswp_article_image_'.$schema_id,
                                 'type' => 'media'                            
+                        ),
+                        array(
+                                'label'   => 'inLanguage',
+                                'id'      => 'saswp_article_inlanguage_'.$schema_id,
+                                'type'    => 'text',
+                                'default' => get_bloginfo('language'),
                         ),
                         array(
                                 'label' => 'Headline',
@@ -1215,6 +1238,12 @@ function saswp_get_fields_by_schema_type( $schema_id = null, $condition = null, 
                             'id' => 'saswp_tech_article_image_'.$schema_id,
                             'type' => 'media',                            
                     ),
+                    array(
+                        'label'   => 'inLanguage',
+                        'id'      => 'saswp_tech_article_inlanguage_'.$schema_id,
+                        'type'    => 'text',
+                        'default' => get_bloginfo('language'),
+                   ),
                     array(
                             'label' => 'Headline',
                             'id' => 'saswp_tech_article_headline_'.$schema_id,
@@ -4540,7 +4569,17 @@ function saswp_get_fields_by_schema_type( $schema_id = null, $condition = null, 
                                 'Part-Time'  => 'Part-Time',
                                 'Contractor' => 'Contractor',       
                             )
-                    ), 
+                        ), 
+                    array(
+                                'label'      => 'Industry',
+                                'id'         => 'saswp_jobposting_schema_industry_'.$schema_id,
+                                'type'       => 'text',                             
+                        ),
+                    array(
+                                'label'      => 'Occupational Category',
+                                'id'         => 'saswp_jobposting_schema_occupational_category_'.$schema_id,
+                                'type'       => 'text',                             
+                        ),
                     array(
                             'label'      => 'Hiring Organization Name',
                             'id'         => 'saswp_jobposting_schema_ho_name_'.$schema_id,

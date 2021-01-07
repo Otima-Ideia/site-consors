@@ -181,7 +181,7 @@ function ampforwp_swift_social_icons(){
 
 								?>
 							<li>
-								<a class="s_wp" target="_blank" <?php ampforwp_rel_attributes_social_links(); ?> href="https://api.whatsapp.com/send?text=<?php echo esc_attr(htmlspecialchars(get_the_title()))."\n".esc_url($amp_permalink); ?>" data-action="share/whatsapp/share" aria-label="whatsapp share"><?php echo $whatsapp_icon; ?></a>
+								<a class="s_wp" target="_blank" <?php ampforwp_rel_attributes_social_links(); ?> href="https://api.whatsapp.com/send?text=<?php echo esc_attr(htmlspecialchars(get_the_title()))."&nbsp;".esc_url($amp_permalink); ?>" data-action="share/whatsapp/share" aria-label="whatsapp share"><?php echo $whatsapp_icon; ?></a>
 							</li>
 							<?php } ?>
 							<?php if(ampforwp_get_setting('enable-single-line-share') == true)  { 
@@ -332,10 +332,3 @@ function ampforwp_swift_social_icons(){
 // Remove default sticky social from Swift
 remove_action('amp_post_template_footer','ampforwp_sticky_social_icons');
 remove_action('amp_post_template_css','amp_social_styles',11);
-//Twitter title #2744
-function ampforwp_sanitize_twitter_title($post_title){
-	$post_title = html_entity_decode( $post_title, ENT_QUOTES, 'UTF-8' );
-    $post_title = rawurlencode( $post_title );
-    $post_title = esc_html( $post_title );
-    return $post_title;
-}

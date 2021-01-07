@@ -1052,6 +1052,9 @@ Class saswp_output_service{
                     if(isset($custom_fields['saswp_article_section'])){
                      $input1['articleSection'] =    $custom_fields['saswp_article_section'];
                     }
+                    if(isset($custom_fields['saswp_article_inlanguage'])){
+                        $input1['inLanguage'] =    $custom_fields['saswp_article_inlanguage'];
+                    }
                     if(isset($custom_fields['saswp_article_headline'])){
                      $input1['headline'] =    $custom_fields['saswp_article_headline'];
                     }                    
@@ -1285,6 +1288,9 @@ Class saswp_output_service{
                     if(isset($custom_fields['saswp_blogposting_main_entity_of_page'])){
                      $input1['mainEntityOfPage'] =    $custom_fields['saswp_blogposting_main_entity_of_page'];
                     }
+                    if(isset($custom_fields['saswp_blogposting_inlanguage'])){
+                        $input1['inLanguage'] =    $custom_fields['saswp_blogposting_inlanguage'];
+                    }
                     if(isset($custom_fields['saswp_blogposting_headline'])){
                      $input1['headline'] =    $custom_fields['saswp_blogposting_headline'];
                     }
@@ -1300,6 +1306,9 @@ Class saswp_output_service{
                     if(isset($custom_fields['saswp_blogposting_url'])){
                      $input1['url'] =    saswp_validate_url($custom_fields['saswp_blogposting_url']);
                     }
+                    if(isset($custom_fields['saswp_blogposting_image'])){
+                     $input1['image'] =    $custom_fields['saswp_blogposting_image'];
+                    }
                     if(isset($custom_fields['saswp_blogposting_date_published'])){
                      $input1['datePublished'] =    $custom_fields['saswp_blogposting_date_published'];
                     }
@@ -1307,7 +1316,7 @@ Class saswp_output_service{
                      $input1['dateModified'] =    $custom_fields['saswp_blogposting_date_modified'];
                     }
                     if(isset($custom_fields['saswp_blogposting_author_type'])){
-                        $input1['author']['@type'] =    $custom_fields['saswp_blogposting_author_type'];
+                     $input1['author']['@type'] =    $custom_fields['saswp_blogposting_author_type'];
                     }
                     if(isset($custom_fields['saswp_blogposting_author_name'])){
                      $input1['author']['name'] =    $custom_fields['saswp_blogposting_author_name'];
@@ -1324,8 +1333,7 @@ Class saswp_output_service{
                      $input1['publisher']['name']        =    $custom_fields['saswp_blogposting_organization_name'];
                      $input1['publisher']['logo']        =    $custom_fields['saswp_blogposting_organization_logo'];
                     }
-                    
-                    
+                                        
                     break;
                     
                 case 'AudioObject':
@@ -1449,6 +1457,9 @@ Class saswp_output_service{
                     if(isset($custom_fields['saswp_newsarticle_URL'])){
                        $input1['url'] =    saswp_validate_url($custom_fields['saswp_newsarticle_URL']); 
                     }
+                    if(isset($custom_fields['saswp_newsarticle_inlanguage'])){
+                        $input1['inLanguage'] =    $custom_fields['saswp_newsarticle_inlanguage']; 
+                    }
                     if(isset($custom_fields['saswp_newsarticle_headline'])){
                        $input1['headline'] =    $custom_fields['saswp_newsarticle_headline']; 
                     }
@@ -1537,6 +1548,10 @@ Class saswp_output_service{
                     }
                     if(isset($custom_fields['saswp_webpage_body'])){
                         $input1['mainEntity']['articleBody'] =    $custom_fields['saswp_webpage_body'];
+                    }
+                    
+                    if(isset($custom_fields['saswp_webpage_keywords'])){
+                        $input1['mainEntity']['keywords'] =    $custom_fields['saswp_webpage_keywords'];
                     }
                     
                     if(isset($custom_fields['saswp_webpage_date_published'])){
@@ -1733,6 +1748,9 @@ Class saswp_output_service{
                     }
                     if(isset($custom_fields['saswp_tech_article_section'])){
                      $input1['articleSection'] =    $custom_fields['saswp_tech_article_section'];
+                    }
+                    if(isset($custom_fields['saswp_tech_article_inlanguage'])){
+                        $input1['inLanguage'] =    $custom_fields['saswp_tech_article_inlanguage'];
                     }
                     if(isset($custom_fields['saswp_tech_article_headline'])){
                      $input1['headline'] =    $custom_fields['saswp_tech_article_headline'];
@@ -3148,7 +3166,12 @@ Class saswp_output_service{
                 break;
                 
                 case 'JobPosting':      
-                      
+
+                    if(isset($custom_fields['saswp_jobposting_schema_industry'])){
+                        $input1['industry']             =    $custom_fields['saswp_jobposting_schema_industry'];
+                    }if(isset($custom_fields['saswp_jobposting_schema_occupational_category'])){
+                        $input1['occupationalCategory'] =    $custom_fields['saswp_jobposting_schema_occupational_category'];
+                    }  
                     if(isset($custom_fields['saswp_jobposting_schema_title'])){
                      $input1['title'] =    $custom_fields['saswp_jobposting_schema_title'];
                     }
@@ -3209,7 +3232,7 @@ Class saswp_output_service{
                     if(isset($custom_fields['saswp_jobposting_schema_es_unittext'])){
                     $input1['estimatedSalary']['value']['unitText'] =    $custom_fields['saswp_jobposting_schema_es_unittext'];
                     }                    
-                    if(isset($custom_fields['saswp_jobposting_schema_validthrough']) && date('Y-m-d',strtotime($custom_fields['saswp_jobposting_schema_validthrough'])) < date('Y-m-d') ){
+                    if(isset($custom_fields['saswp_jobposting_schema_validthrough'])  && $custom_fields['saswp_jobposting_schema_validthrough'] !='' && date('Y-m-d',strtotime($custom_fields['saswp_jobposting_schema_validthrough'])) < date('Y-m-d') ){
                         $input1 = array();    
                     }
                     
@@ -3517,16 +3540,22 @@ Class saswp_output_service{
                  $product_details['product_availability'] = $product->get_stock_status();
              }
              
+             $woo_price = $product->get_price();
+
+             if( function_exists('wc_get_price_including_tax')) {
+                $woo_price = wc_get_price_including_tax($product);
+             } 
+
              if(method_exists('WC_Product_Simple', 'get_type')){
                  
                 if($product->get_type() == 'variable'){
                     $product_details['product_varible_price']   = $varible_prices;
                 }else{
-                    $product_details['product_price']           = $product->get_price();
+                    $product_details['product_price']           = $woo_price;
                 }
 
              }else{
-                $product_details['product_price']           = $product->get_price();
+                $product_details['product_price']           = $woo_price;
              }
                           
              $product_details['product_sku']             = $product->get_sku() ? $product->get_sku(): get_the_ID();             
@@ -3738,7 +3767,7 @@ Class saswp_output_service{
             $post_review_title  = '';
             $post_review_desc   = '';
             
-            $post_meta   = get_post_meta($post_id, $key='', true);                                       
+            $post_meta   = get_post_meta($post_id);                                       
             
             if(isset($post_meta['_post_review_box_breakdowns_score'])){
                 
@@ -3856,7 +3885,7 @@ Class saswp_output_service{
                 
                 if($post_type =='dwqa-question' && isset($sd_data['saswp-dw-question-answer']) && $sd_data['saswp-dw-question-answer'] ==1 && (is_plugin_active('dw-question-answer/dw-question-answer.php') || is_plugin_active('dw-question-answer-pro/dw-question-answer.php')) ){
                  
-                $post_meta      = get_post_meta($post_id, $key='', true);
+                $post_meta      = get_post_meta($post_id);
                 
                 if(isset($post_meta['_dwqa_best_answer'])){
                     
@@ -4060,8 +4089,8 @@ Class saswp_output_service{
 					'mainEntityOfPage'              => saswp_get_permalink(),					
 					'headline'			=> saswp_get_the_title(),
 					'description'                   => saswp_get_the_excerpt(),
-                                        'articleBody'                   => saswp_get_the_content(),
-                                        'keywords'                      => saswp_get_the_tags(),
+                    'articleBody'                   => saswp_get_the_content(),
+                    'keywords'                      => saswp_get_the_tags(),
 					'datePublished'                 => esc_html($date),
 					'dateModified'                  => esc_html($modified_date),
 					'author'			=> saswp_get_author_details(),

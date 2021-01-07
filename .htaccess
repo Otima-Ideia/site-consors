@@ -1,5 +1,5 @@
 # BEGIN WpFastestCache
-# Modified Time: 12-11-20 12:28:53
+# Modified Time: 13-11-20 16:19:33
 <IfModule mod_rewrite.c>
 RewriteEngine On
 RewriteBase /
@@ -97,6 +97,7 @@ FileETag None
 # Quaisquer alterações nas diretivas entre esses marcadores serão sobrescritas.
 <IfModule mod_rewrite.c>
 RewriteEngine On
+RewriteRule .* - [E=HTTP_AUTHORIZATION:%{HTTP:Authorization}]
 RewriteBase /
 RewriteRule ^index\.php$ - [L]
 RewriteCond %{REQUEST_FILENAME} !-f

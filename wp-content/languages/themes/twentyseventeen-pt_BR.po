@@ -16,6 +16,7 @@ msgid "Twenty Seventeen brings your site to life with header video and immersive
 msgstr "Twenty Seventeen dá vida ao seu site com o vídeo de cabeçalho e imagens destacadas imersivas. Focado em sites empresariais, possui suporte para múltiplas seções na página inicial, widgets, navegação, menu de redes sociais, logo e muito mais. Personalize sua grade assimétrica com um padrão de cores e exiba seu conteúdo com formatos de posts. Nosso tema padrão para 2017 funciona perfeitamente em vários idiomas e dispositivos."
 
 #. Theme Name of the theme
+#: inc/block-patterns.php:17
 msgid "Twenty Seventeen"
 msgstr "Twenty Seventeen"
 
@@ -23,11 +24,11 @@ msgstr "Twenty Seventeen"
 msgid "Footer"
 msgstr "Rodapé"
 
-#: functions.php:340
+#: functions.php:346
 msgid "Add widgets here to appear in your sidebar on blog posts and archive pages."
 msgstr "Adicione aqui widgets para aparecer na barra lateral de seus posts e páginas de arquivo."
 
-#: functions.php:338 sidebar.php:18
+#: sidebar.php:18 functions.php:344
 msgid "Blog Sidebar"
 msgstr "Barra lateral"
 
@@ -36,17 +37,17 @@ msgstr "Barra lateral"
 msgid "Scroll down to content"
 msgstr "Ir para o conteúdo"
 
-#: functions.php:181
+#: functions.php:187
 msgctxt "Theme starter content"
 msgid "Coffee"
 msgstr "Café"
 
-#: functions.php:177
+#: functions.php:183
 msgctxt "Theme starter content"
 msgid "Sandwich"
 msgstr "Sanduíche"
 
-#: functions.php:173
+#: functions.php:179
 msgctxt "Theme starter content"
 msgid "Espresso"
 msgstr "Espresso"
@@ -148,24 +149,24 @@ msgstr "Combinação de cores"
 msgid "Default Header Image"
 msgstr "Imagem padrão do cabeçalho"
 
-#: functions.php:362
+#: functions.php:368
 msgid "Footer 2"
 msgstr "Rodapé 2"
 
-#: functions.php:352 functions.php:364
+#: functions.php:358 functions.php:370
 msgid "Add widgets here to appear in your footer."
 msgstr "Adicione widgets aqui para serem exibidos em seu rodapé."
 
-#: functions.php:350
+#: functions.php:356
 msgid "Footer 1"
 msgstr "Rodapé 1"
 
-#: functions.php:290
+#: functions.php:296
 msgctxt "Libre Franklin font: on or off"
 msgid "on"
 msgstr "ligado"
 
-#: functions.php:64 functions.php:205
+#: functions.php:69 functions.php:211
 #: template-parts/navigation/navigation-top.php:12
 msgid "Top Menu"
 msgstr "Menu do topo"
@@ -187,7 +188,7 @@ msgstr "Nada foi encontrado com os termos da sua pesquisa. Tente novamente com a
 msgid "Ready to publish your first post? <a href=\"%s\">Get started here</a>."
 msgstr "Pronto para publicar seu primeiro post? <a href=\"%s\">Comece aqui</a>."
 
-#: template-parts/post/content-none.php:17 search.php:26
+#: search.php:26 template-parts/post/content-none.php:17
 msgid "Nothing Found"
 msgstr "Nada encontrado"
 
@@ -195,11 +196,11 @@ msgstr "Nada encontrado"
 msgid "Previous Post"
 msgstr "Post anterior"
 
-#: comments.php:71 single.php:33
+#: single.php:33 comments.php:71
 msgid "Previous"
 msgstr "Anteriores"
 
-#: comments.php:72 single.php:34
+#: single.php:34 comments.php:72
 msgid "Next"
 msgstr "Próximo"
 
@@ -224,12 +225,12 @@ msgid "Search Results for: %s"
 msgstr "Resultados da pesquisa por: %s"
 
 #. translators: %s: Post title.
-#: functions.php:392 template-parts/post/content-gallery.php:71
+#: functions.php:398 template-parts/post/content-gallery.php:71
+#: template-parts/post/content.php:57 template-parts/post/content-image.php:61
+#: template-parts/post/content-audio.php:84
 #: template-parts/post/content-video.php:83
-#: template-parts/post/content-image.php:61
-#: template-parts/post/content-audio.php:84 template-parts/post/content.php:57
-#: template-parts/page/content-front-page-panels.php:45
 #: template-parts/page/content-front-page.php:42
+#: template-parts/page/content-front-page-panels.php:45
 msgid "Continue reading<span class=\"screen-reader-text\"> \"%s\"</span>"
 msgstr "Continue lendo<span class=\"screen-reader-text\"> \"%s\"</span>"
 
@@ -248,11 +249,11 @@ msgid "Edit<span class=\"screen-reader-text\"> \"%s\"</span>"
 msgstr "Editar<span class=\"screen-reader-text\"> \"%s\"</span>"
 
 #: template-parts/post/content-gallery.php:78
+#: template-parts/post/content.php:64 template-parts/post/content-image.php:68
+#: template-parts/post/content-audio.php:91
 #: template-parts/post/content-video.php:90
-#: template-parts/post/content-image.php:68
-#: template-parts/post/content-audio.php:91 template-parts/post/content.php:64
-#: template-parts/page/content-page.php:26
 #: template-parts/page/content-front-page.php:48
+#: template-parts/page/content-page.php:26
 msgid "Pages:"
 msgstr "Páginas"
 
@@ -264,15 +265,15 @@ msgstr "Menu"
 msgid "Skip to content"
 msgstr "Pular para o conteúdo"
 
-#: functions.php:484
+#: functions.php:490
 msgid "Collapse child menu"
 msgstr "Fechar submenu"
 
-#: functions.php:483
+#: functions.php:489
 msgid "Expand child menu"
 msgstr "Expandir submenu"
 
-#: functions.php:65 functions.php:216
+#: functions.php:70 functions.php:222
 msgid "Social Links Menu"
 msgstr "Menu de links sociais"
 
@@ -303,15 +304,15 @@ msgctxt "comments title"
 msgid "One Reply to &ldquo;%s&rdquo;"
 msgstr "Uma resposta para &ldquo;%s&rdquo;"
 
-#: archive.php:51 index.php:55 search.php:52
+#: index.php:55 archive.php:51 search.php:52
 msgid "Page"
 msgstr "Página"
 
-#: archive.php:50 index.php:54 search.php:51
+#: index.php:54 archive.php:50 search.php:51
 msgid "Next page"
 msgstr "Próxima página"
 
-#: archive.php:49 index.php:53 search.php:50
+#: index.php:53 archive.php:49 search.php:50
 msgid "Previous page"
 msgstr "Página anterior"
 

@@ -6,8 +6,10 @@ if ( ! defined( 'ABSPATH' ) ) {
 // Callbacks for adding content to an AMP template
 
 function amp_post_template_add_title( $amp_template ) {
+	$title = $amp_template->get( 'document_title' );
+	$title = str_replace('&#8211;', '-', $title);
 	?>
-	<title><?php echo esc_html( $amp_template->get( 'document_title' ) ); ?></title>
+	<title><?php echo esc_html( $title ); ?></title>
 	<?php
 }
 
@@ -23,6 +25,9 @@ if( (class_exists('Yoast\\WP\\SEO\\Integrations\\Front_End_Integration')) ){
 	add_action( 'amp_post_template_head', 'AMPforWP\\AMPVendor\\amp_post_template_add_title' );
 }
 function amp_post_template_add_canonical( $amp_template ) {
+	if (function_exists('aioseo_pro_just_activated')) {
+    	return;
+  	}
 	?>
 	<link rel="canonical" href="<?php echo esc_url( apply_filters('ampforwp_modify_rel_url',$amp_template->get( 'canonical_url' ) ) ); ?>" />
    <?php
@@ -53,7 +58,7 @@ function amp_post_template_add_cached_link($amp_template) {
 		<?php
 		$scripts = $amp_template->get( 'amp_component_scripts', array() );
 		foreach ( $scripts as $element => $script ) : 
-			if (strpos($script, "amp-experiment") || strpos($script, "amp-dynamic-css-classes") || strpos($script, "amp-story")) { 
+			if (strpos($script, "amp-experiment") || strpos($script, "amp-dynamic-css-classes")) { 
 		?>
 			<link rel="preload" as="script" href="<?php echo esc_url( $script ); ?>">
 		<?php } 

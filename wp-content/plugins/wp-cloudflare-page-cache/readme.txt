@@ -2,9 +2,9 @@
 Contributors: salvatorefresta, isaumya
 Tags: cloudflare cache, improve speed, improve performance, page caching
 Requires at least: 3.0.1
-Tested up to: 5.5
+Tested up to: 5.6
 Requires PHP: 7.0
-Stable tag: 4.3.6
+Stable tag: 4.3.9.2
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
@@ -20,7 +20,13 @@ However for dynamic websites such as Wordpress, it is not possible to use this r
 
 You will be able to significantly **improve the response times of your Wordpress website** by taking advantage of the very fast Cloudflare cache also for HTML pages, **saving a lot of bandwidth**. The alternative to this plugin is to purchase and configure the Enterprise plan.
 
-**This plugin is compatible with all versions of Wordpress and all Wordpress themes.** It can also be used in conjunction with other performance plugins - such like [Autoptimize](https://wordpress.org/plugins/autoptimize/) and [LiteSpeed Cache](https://wordpress.org/plugins/litespeed-cache/) - as long as their rules do not interfere with the Cloudflare cache.
+**This plugin is 100% jQuery free and compatible with all versions of Wordpress and all Wordpress themes.** It can also be used in conjunction with other performance plugins - such like [Autoptimize](https://wordpress.org/plugins/autoptimize/) and [LiteSpeed Cache](https://wordpress.org/plugins/litespeed-cache/) - as long as their rules do not interfere with the Cloudflare cache.
+
+If you are using Kinsta as your hosting provider, this plugin works flawlessly with Kinsta's Server Level Caching and this plugin has also been thoroughly tested on Kinsta Servers to ensure it is fully compatible with Kinsta Server Caching.
+
+If you are still hesitant about using this plugin, take a look at the plugin review video below by IdeaSpot, where you can take a quick look on how the plugin works.
+
+[youtube https://www.youtube.com/watch?v=c-U5Nw2xTj8]
 
 == Installation ==
 
@@ -101,11 +107,97 @@ Enable the log mode and send me the log file and the steps to reproduce the issu
 
 == Changelog ==
 
-= 4.3.6 =
+= VERSION 4.3.9.2 (2ST JANUARY 2021) =
+* Fix: minor bugs when click on Purge Cache and the option to purge HTML pages only is enabled
+* Improvement: improve Litespeed Cache support
+* Improvement: option to purge HTML pages only. Now it supports all Wordpress-type posts
+* Update: plugin is now 100% PHP 8 compatible
+* Update: change the default s-maxage from 604800 (1 week) to 31536000 (1 year)
+* Update: better scheduled events management
+* Update: default excluded URIs
+
+= VERSION 4.3.9.1 (1ST JANUARY 2021) =
+* Fix: PHP fatal error on lines 2830 and 514 of cache_controller.class.php when option to purge HTML pages only is enabled
+
+= VERSION 4.3.9 (31TH DECEMBER 2020) =
+* New: option to purge HTML pages only instead of full Cloudflare cache (assets + pages) (Cache tab)
+* New: option to auto prefetch URLs in Viewport (Other tab)
+* New: support for WP Performance (Third Party tab)
+* New: new WP Rocket firing actions (Third Party tab)
+* New: purge post Cloudflare cache on Elementor AJAX update (elementor/ajax/register_actions)
+* New: option to purge Cloudflare cache for WooCommerce scheduled sales (Third Party tab)
+* New: support for Swift Performance Lite (Third Party tab)
+* New: automatically add the cache buster for redirects made using wp_redirect PHP function
+* New: option to disable cache purging using queue (Cache tab)
+* Fix: minor bug when click on reset all
+* Improvement: replaced fnmatch with a custom function
+* Update: the updated worker script removes certain query parameters (fbclid, fb_action_ids, fb_action_types, fb_source, _ga, age-verified, ao_noptimize, usqp, cn-reloaded, klaviyo, amp, gclid, utm_source, utm_medium, utm_campaign, utm_content, utm_term) from the URL before it handles it
+
+= VERSION 4.3.8 (14TH DECEMBER 2020) =
+* New: support for WP Engine hosting provider (beta)
+* New: support for SpinupWP hosting provider (beta)
+* New: support for Kinsta hosting provider (beta)
+* New: support for Siteground SuperCacher (beta)
+* New: log verbosity option
+* Update: advanced-cache.php (deleted unuseful old code)
+* Fix: logged in user getting cached version with the new worker code
+* Fix: Undefined index: REQUEST_METHOD when using WP CLI
+* Fix: Varnish cache purging on Cloudways
+
+= VERSION 4.3.7.4 (1OTH DECEMBER 2020) =
+* Update: removed the option "Bypass cache for the following user agents" 'cause it slow down the TTFB
+* Update: new optimized worker code
+* Fix: prevent the cache buster to be added for anchor links on the current page
+
+= VERSION 4.3.7.3 =
+* Update: load assets on frontend only for users which have permission to purge cache and only if the "Remove purge option from toolbar" is not enabled
+
+= VERSION 4.3.7.2 =
+* Fix: looking for existing routes and workers also on CF instead of local database only
+* Update: delete the main plugin folder from wp-content on plugin deletion
+
+*IMPORTANT NOTICE!* Due to Cloudflare's change of API for worker management, users who use tokens as authentication will also need to specify the email address of the Cloudflare account used (General tab).
+
+If not, users who manage multiple cloudflare accounts from the same interface may have problems uploading or deleting the worker.
+
+= VERSION 4.3.7.1 =
+* Fix: Cloudflare Worker Error 1101
+* Fix: the preloader must also be started during manual cache purging if the "Automatically preload the pages you have purged from Cloudflare cache with this plugin" option is enabled
+* Fix: added "no-cache" in Cache-Control response header when downloading the log file
+
+= VERSION 4.3.7 =
+* New: option to bypass cache for specific user agents in worker mode (Cache tab)
+* New: option to bypass cache for specific cookies in worker mode (Cache tab)
+* New: option to automatically purge the object cache (Advanced tab)
+* New: option to select user roles allowed to purge the cache (Other tab)
+* New: option to prevent fallback cache to cache URLs without trailing slash (Cache tab)
+* New: support for WP Assets Clean Up Pro (Third Party tab)
+* New: support for Nginx Helper (Third Party tab)
+* New: cache status icon on admin bar
+* New: the plugin is now jQuery free
+* New: use the faster typecasting instead of intval
+* New: SWCFPC_PURGE_CACHE_CRON_INTERVAL PHP constant to define the interval of the purge cache cronjob (default: 10 seconds)
+* New: action "swcfpc_purge_cache" to purge Cloudflare cache programmatically (read FAQ section)
+* New: cache-control in Nginx browser caching rules
+* Fix: error code 1014 when purging single urls cache
+* Fix: show "Purge CF Cache" on frontend admin bar
+* Fix: URL on page rule for Wordpress installed in subdirectory
+* Fix: Varnish invalid hostname
+* Fix: purge whole cache via cronjob
+* Fix: IfModule directive when "Strip response cookies on pages that should be cached" option is enabled
+* Fix: error fnmatch(): Filename exceeds the maximum allowed length
+* Fix: remove s-max-age directive from cache-control response header
+* Fix: excluding Wordpress, WooCommerce and EDD API requests from fallback and Cloudflare cache
+* Fix: "Prevent the following URIs to be Cached" is automatically getting delete when a single URI is present
+* Update: Worker id is now unique
+* Update: Updated the worker script massively and written it from the ground up for better performance and uncase handle
+* Security: making sure that the debug.log file is not accessible publicly with web server rules
+
+= VERSION 4.3.6 =
 * New: import/export configurations
 * Fix:  Uncaught Error: [] operator not supported for strings in wp-cloudflare-super-page-cache.php:458
 
-= 4.3.5 =
+= VERSION 4.3.5 =
 * New: purge cache using a fast queue for a better backend performance
 * New: support for EDD - Easy Digital Downloads
 * Update: turn off autocomplete for Cloudflare API token and API key fields (thanks @alx359)
@@ -122,16 +214,16 @@ Enable the log mode and send me the log file and the steps to reproduce the issu
 * Fix: enable or disable fallback cache in real time when the cloudflare one is being enabled or disabled
 * Fix: delete worker and route on reset all
 
-= 4.3.4.3
+= VERSION 4.3.4.3
 * Fix: warning on str_replace
 
-= 4.3.4.2 =
+= VERSION 4.3.4.2 =
 * Fix: Error message: Uncaught Error: [] operator not supported for strings in wp-cloudflare-super-page-cache.php:408
 
-= 4.3.4.1 =
+= VERSION 4.3.4.1 =
 * Fix: page rule on Cloudflare is deleted when update to 4.3.4. To solve this problem please click on Reset all and enable again the page cache. Sorry for the inconvenience
 
-= 4.3.4 =
+= VERSION 4.3.4 =
 * New: FAQ tab
 * New: SWCFPC_CF_WOKER_FULL_PATH PHP constant to define a full path to a custom CF Worker
 * New: SWCFPC_CURL_TIMEOUT PHP constant to define the timeout in seconds for cURL calls (default: 10 seconds)
@@ -159,7 +251,7 @@ Enable the log mode and send me the log file and the steps to reproduce the issu
 * Update: prevent to cache URLs with ao_noptirocket parameters
 * Update: transform most of backend.js code from jQuery to Vanilla Javascript for better performance (thank you isaumya)
 
-= 4.3.3 =
+= VERSION 4.3.3 =
 * New: added option to force bypass of whole Wordpress backend with an additional page rule on Cloudflare
 * New: WP Asset Clean Up support
 * New: start preloader via Cronjob
@@ -168,7 +260,7 @@ Enable the log mode and send me the log file and the steps to reproduce the issu
 * Update: improved test cache
 * Fix: cache bypass for edit.php
 
-= 4.3.2 =
+= VERSION 4.3.2 =
 * New: added option to disable the automatic SEO redirect for URLs with cache buster for logged out users
 * New: added option to enable or disable Varnish support
 * New: added option to exclude some URIs from fallback cache only
@@ -184,43 +276,43 @@ Enable the log mode and send me the log file and the steps to reproduce the issu
 
 Many thanks to Saumya Majumder for the great support and the time passed with me for bug fixing and testing
 
-= 4.3.1 =
+= VERSION 4.3.1 =
 * Fix: error in fallback cache that did not allow the correct form submission
 
-= 4.3.0 =
+= VERSION 4.3.0 =
 * Fix: Increased the timeout for Cloudflare HTTP requests to 10 seconds
 * Fix: avoid fallback cache to cache non-GET requests
 * Fix: avoid download sensitive information of fallback cache settings files
 * New: automatic SEO redirect (301) for all URLs that for any reason have been indexed together with the cache buster
 
-= 4.2.9 =
+= VERSION 4.2.9 =
 * Fix: fatal error when purging cache from Varnish
 
-= 4.2.8 =
+= VERSION 4.2.8 =
 * Fix: drop swcfpc_logs table
 * Fix: purge cache in chunks when the related URLs exceed the 30 units
 * Fix: prevent preload/purge external URLs
 
-= 4.2.7 =
+= VERSION 4.2.7 =
 * Fix: error on delete source advanced-cache.php
 
-= 4.2.6 =
+= VERSION 4.2.6 =
 * Fix: copy advanced-cache.php
 
-= 4.2.4 =
+= VERSION 4.2.4 =
 * New: Varnish support
 * New: Preloading internal links for chosen Wordpress menus
 * New: Disable WP-Rocket page cache only without installing third-party addons
 * New: WP-Optimize support
 * New: Cache Enabler support
 
-= Version 4.2.2 =
+= VERSION Version 4.2.2 =
 * Fixed PHP Fatal Error for SWCFPC_Cache_Controller::purge_cache_when_comment_is_deleted
 
-= Version 4.2.1 =
+= VERSION Version 4.2.1 =
 * Merged pro features with free ones
 
-= Version 4.2 =
+= VERSION Version 4.2 =
 * New: page caching via Cloudflare Workers
 * New: page caching as fallback to Cloudflare
 * New: automatically start the preloader when Cloudflare cache is purged
@@ -232,46 +324,46 @@ Many thanks to Saumya Majumder for the great support and the time passed with me
 * Improved AMP support
 * Disable page cache on plugin deactivation instead of resetting all
 
-= Version 4.1.4 =
+= VERSION Version 4.1.4 =
 * Added an option to automatically purge the whole cache when WP Fastest Cache purges its own cache
 * Added an option to automatically purge the whole cache when Hummingbird purges its own cache
 * Move the menu inside Settings page
 
-= Version 4.1.3 =
+= VERSION Version 4.1.3 =
 * Cloudflare has finally solved a bug that allows you to use access tokens with permissions limited to the domain being configured only.
 * Added an option to remove purge options from toolbar
 * Added an option to disable metaboxes from single pages and posts
 
-= Version 4.1.2 =
+= VERSION Version 4.1.2 =
 * Added an option to automatically purge cache for WooCommerce product page and related categories when stock quantity changes
 * Added an option to automatically purge the whole cache when LiteSpeed Cache purges its own cache
 
-= Version 4.1.1 =
+= VERSION Version 4.1.1 =
 * Fix javascript error Uncaught TypeError: Cannot read property 'addEventListener' of null
 
-= Version 4.1 =
+= VERSION Version 4.1 =
 * Fix ajax url for Wordpress multisite
 * Fix other minor bugs
 
-= Version 4.0.6 =
+= VERSION Version 4.0.6 =
 * Fixed error Call to undefined function wp_generate_password()
 
-= Version 4.0.5 =
+= VERSION Version 4.0.5 =
 * Fix other minor bugs
 
-= Version 4.0.4 =
+= VERSION Version 4.0.4 =
 * Fix bug (cache buster also for not logged in users). Thanks to Tim Marringa
 
-= Version 4.0.3 =
+= VERSION Version 4.0.3 =
 * Show page actions only if page cache is enabled
 
-= Version 4.0.2 =
+= VERSION Version 4.0.2 =
 * Fixing default page number for preloader
 
-= Version 4.0.1 =
+= VERSION Version 4.0.1 =
 * Fast fix for page testing function
 
-= Version 4.0 =
+= VERSION Version 4.0 =
 * Added pages to top-level menu
 * New logs page
 * Added ability to define some values (API Key, API Token, API Email, API Zone ID, API Subdomain, Cache buster) using PHP constants
@@ -284,38 +376,38 @@ Many thanks to Saumya Majumder for the great support and the time passed with me
 * Added an option to bypass the cache for requests with query variables (query string)
 * Added metabox to exclude single page/post from the cache
 
-= Version 3.8 =
+= VERSION Version 3.8 =
 * Added the ability to use the API tokens instead of the API keys to authenticate with Cloudflare
 * Added in the admin toolbar the option to purge the cache for the current page/post only
 * Added more debug details
 * Added page/post action links to purge the cache for the selected page/post only
 
-= Version 3.7.2 =
+= VERSION Version 3.7.2 =
 * Fixed a sentence for italian language
 
-= Version 3.7.1 =
+= VERSION Version 3.7.1 =
 * Added option for automatically purge single post cache when a new comment is inserted into the database or when a comment is approved or deleted
 
-= Version 3.7 =
+= VERSION Version 3.7 =
 * Added options for WP Rocket users
 * Added options for W3 Total Cache users
 * Added options for WP Super Cache users
 * Improve some internal hooks
 
-= Version 3.6.1 =
+= VERSION Version 3.6.1 =
 * Added options for WooCommerce
 
-= Version 3.6 =
+= VERSION Version 3.6 =
 * Added Nginx support for "Overwrite the cache-control header" option
 
-= Version 3.5 =
+= VERSION Version 3.5 =
 * Added Nginx support
 * Italian translation
 
-= Version 3.4 =
+= VERSION Version 3.4 =
 * Fixed notice Undefined index: HTTP_X_REQUESTED_WITH
 
-= Older versions =
+= OLDER VERSIONS =
 Version 1.5   - Added support for WooCommerce, filters and actions
 Version 1.6   - Added support for scheduled posts, cronjobs, robots.txt and Yoast sitemaps
 Version 1.7   - Little bugs fix

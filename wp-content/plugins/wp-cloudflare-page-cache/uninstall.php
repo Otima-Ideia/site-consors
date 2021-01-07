@@ -9,6 +9,10 @@ global $wpdb;
 
 delete_option("swcfpc_config");
 delete_option("swcfpc_version");
+delete_option("swcfpc_pages_list");
+delete_option("swcfpc_preloader_lock");
+delete_option("swcfpc_purge_cache_lock");
+delete_option("swcfpc_fc_ttl_registry");
 
 $parts = parse_url( home_url() );
 
@@ -20,6 +24,10 @@ if( defined('SWCFPC_ADVANCED_CACHE') )
 
 $config_file_path = ABSPATH."wp-config.php";
 
+$parts = parse_url( home_url() );
+$plugin_storage_main_path = WP_CONTENT_DIR . '/wp-cloudflare-super-page-cache/';
+$plugin_storage_path = $plugin_storage_main_path.$parts['host'];
+
 if( file_exists($config_file_path) && is_writable($config_file_path) ) {
 
     // Get content of the config file.
@@ -27,7 +35,7 @@ if( file_exists($config_file_path) && is_writable($config_file_path) ) {
     $config_file_count = count($config_file);
     $last_line = "";
 
-    for($i=0; $i<$config_file_count; $i++) {
+    for($i=0; $i<$config_file_count; ++$i) {
 
         // Remove double empty line
         if( $i>0 && trim($config_file[$i]) == "" && $last_line == "" ) {
@@ -65,3 +73,51 @@ if( file_exists($config_file_path) && is_writable($config_file_path) ) {
 
 $timestamp = wp_next_scheduled( 'swcfpc_cache_purge_cron' );
 wp_unschedule_event( $timestamp, 'swcfpc_cache_purge_cron' );
+
+if( file_exists($plugin_storage_path) ) {
+    delete_directory_recursive( $plugin_storage_path );
+}
+
+if( file_exists($plugin_storage_main_path) && is_directory_empty($plugin_storage_main_path) )
+    rmdir( $plugin_storage_main_path );
+
+function delete_directory_recursive($dir) {
+
+    if( !class_exists('RecursiveDirectoryIterator') || !class_exists('RecursiveIteratorIterator') )
+        return false;
+
+    $it    = new RecursiveDirectoryIterator($dir, RecursiveDirectoryIterator::SKIP_DOTS);
+    $files = new RecursiveIteratorIterator($it,RecursiveIteratorIterator::CHILD_FIRST);
+
+    foreach($files as $file) {
+
+        if ($file->isDir())
+            rmdir($file->getRealPath());
+        else
+            unlink($file->getRealPath());
+
+    }
+
+    rmdir($dir);
+
+    return true;
+
+}
+
+
+function is_directory_empty($dir) {
+
+    $handle = opendir($dir);
+
+    while (false !== ($entry = readdir($handle))) {
+        if ($entry != "." && $entry != "..") {
+            closedir($handle);
+            return false;
+        }
+    }
+
+    closedir($handle);
+
+    return true;
+
+}

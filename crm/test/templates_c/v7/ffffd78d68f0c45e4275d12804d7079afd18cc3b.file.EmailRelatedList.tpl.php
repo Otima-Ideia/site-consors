@@ -1,4 +1,4 @@
-<?php /* Smarty version Smarty-3.1.7, created on 2020-05-19 19:14:15
+<?php /* Smarty version Smarty-3.1.7, created on 2020-11-24 19:45:12
          compiled from "/home/wwwconsorscom/public_html/crm/includes/runtime/../../layouts/v7/modules/Vtiger/EmailRelatedList.tpl" */ ?>
 <?php /*%%SmartyHeaderCode:8167954375ec4300730ada1-21177323%%*/if(!defined('SMARTY_DIR')) exit('no direct access allowed');
 $_valid = $_smarty_tpl->decodeProperties(array (
@@ -7,7 +7,7 @@ $_valid = $_smarty_tpl->decodeProperties(array (
     'ffffd78d68f0c45e4275d12804d7079afd18cc3b' => 
     array (
       0 => '/home/wwwconsorscom/public_html/crm/includes/runtime/../../layouts/v7/modules/Vtiger/EmailRelatedList.tpl',
-      1 => 1520586669,
+      1 => 1603288800,
       2 => 'file',
     ),
   ),
@@ -15,6 +15,8 @@ $_valid = $_smarty_tpl->decodeProperties(array (
   'function' => 
   array (
   ),
+  'version' => 'Smarty-3.1.7',
+  'unifunc' => 'content_5ec430074a093',
   'variables' => 
   array (
     'PAGING' => 0,
@@ -45,8 +47,6 @@ $_valid = $_smarty_tpl->decodeProperties(array (
     'IS_DELETABLE' => 0,
   ),
   'has_nocache_code' => false,
-  'version' => 'Smarty-3.1.7',
-  'unifunc' => 'content_5ec430074a093',
 ),false); /*/%%SmartyHeaderCode%%*/?>
 <?php if ($_valid && !is_callable('content_5ec430074a093')) {function content_5ec430074a093($_smarty_tpl) {?>
 <div class="relatedContainer"><input type="hidden" name="currentPageNum" value="<?php echo $_smarty_tpl->tpl_vars['PAGING']->value->getCurrentPage();?>

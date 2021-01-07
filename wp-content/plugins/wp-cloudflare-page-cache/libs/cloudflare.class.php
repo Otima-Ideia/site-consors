@@ -188,7 +188,7 @@ class SWCFPC_Cloudflare
 
             if( isset($json["result_info"]) && is_array($json["result_info"]) ) {
 
-                if( isset($json["result_info"]["total_pages"]) && intval($json["result_info"]["total_pages"]) > $current_page ) {
+                if( isset($json["result_info"]["total_pages"]) && (int) $json["result_info"]["total_pages"] > $current_page ) {
                     $pagination = true;
                     $current_page++;
                 }
@@ -400,7 +400,7 @@ class SWCFPC_Cloudflare
         $this->objects = $this->main_instance->get_objects();
 
         $cf_headers = $this->get_api_headers();
-        $url = site_url("/*");
+        $url = home_url("/*");
 
         if( is_object($this->objects["logs"]) ) {
             $this->objects["logs"]->add_log("cloudflare::add_cache_everything_page_rule", "Request URL: ".esc_url_raw("https://api.cloudflare.com/client/v4/zones/$this->zone_id/pagerules") );
@@ -564,7 +564,72 @@ class SWCFPC_Cloudflare
     }
 
 
-    function purge_cache_urls($urls, &$error) {
+    private function purge_cache_urls_async($urls) {
+
+        $this->objects = $this->main_instance->get_objects();
+
+        $cf_headers           = $this->get_api_headers();
+        $cf_headers["method"] = "POST";
+
+        $chunks = array_chunk($urls, 30);
+
+        $multi_curl = curl_multi_init();
+        $curl_array = array();
+        $curl_index = 0;
+
+        foreach( $chunks as $single_chunk ) {
+
+            $curl_array[$curl_index] = curl_init();
+
+            curl_setopt_array($curl_array[$curl_index], array(
+                CURLOPT_URL => "https://api.cloudflare.com/client/v4/zones/$this->zone_id/purge_cache",
+                CURLOPT_RETURNTRANSFER => 1,
+                CURLOPT_MAXREDIRS => 10,
+                CURLOPT_TIMEOUT => $cf_headers["timeout"],
+                CURLOPT_CUSTOMREQUEST => "POST",
+                CURLOPT_POST => 1,
+                CURLOPT_HTTPHEADER => $cf_headers["headers"],
+                CURLOPT_POSTFIELDS => json_encode(array("files" => array_values($single_chunk))),
+            ));
+
+            curl_multi_add_handle($multi_curl, $curl_array[$curl_index]);
+
+            $curl_index++;
+
+        }
+
+        // execute the multi handle
+        $active = null;
+
+        do {
+
+            $status = curl_multi_exec($multi_curl, $active);
+
+            if ($active) {
+                // Wait a short time for more activity
+                curl_multi_select($multi_curl);
+            }
+
+        } while ($active && $status == CURLM_OK);
+
+        // close the handles
+        for($i=0; $i<=$curl_index; $i++) {
+            curl_multi_remove_handle($multi_curl, $curl_array[$i]);
+        }
+
+        curl_multi_close($multi_curl);
+
+        // free up additional memory resources
+        for($i=0; $i<$curl_index; $i++) {
+            curl_close($curl_array[$i]);
+        }
+
+        return true;
+
+    }
+
+
+    function purge_cache_urls($urls, &$error, $async=false) {
 
         $this->objects = $this->main_instance->get_objects();
 
@@ -577,54 +642,63 @@ class SWCFPC_Cloudflare
 
             $chunks = array_chunk($urls, 30);
 
-            foreach( $chunks as $single_chunk ) {
+            // Multiple async requests for PHP lower then v.8
+            /*
+            if( $async && version_compare(phpversion(), '8', '<') ) {
+                $this->purge_cache_urls_async( $urls );
+            }
+            else {*/
 
-                $cf_headers["body"] = json_encode(array("files" => $single_chunk));
+                foreach ($chunks as $single_chunk) {
 
-                if (is_object($this->objects["logs"])) {
-                    $this->objects["logs"]->add_log("cloudflare::purge_cache_urls", "Request URL: " . esc_url_raw("https://api.cloudflare.com/client/v4/zones/$this->zone_id/purge_cache"));
-                    $this->objects["logs"]->add_log("cloudflare::purge_cache_urls", "Request Body: " . json_encode(array("files" => $single_chunk)));
-                }
+                    $cf_headers["body"] = json_encode(array("files" => array_values($single_chunk)));
 
-                $response = wp_remote_post(
-                    esc_url_raw("https://api.cloudflare.com/client/v4/zones/$this->zone_id/purge_cache"),
-                    $cf_headers
-                );
-
-                if (is_wp_error($response)) {
-                    $error = __('Connection error: ', 'wp-cloudflare-page-cache') . $response->get_error_message();
-                    $this->objects["logs"]->add_log("cloudflare::purge_cache_urls", "Error wp_remote_post: ".$error );
-                    return false;
-                }
-
-                $response_body = wp_remote_retrieve_body($response);
-
-                if (is_object($this->objects["logs"])) {
-                    $this->objects["logs"]->add_log("cloudflare::purge_cache_urls", "Response: " . $response_body);
-                }
-
-                $json = json_decode($response_body, true);
-
-                if ($json["success"] == false) {
-
-                    $error = array();
-
-                    foreach ($json["errors"] as $single_error) {
-                        $error[] = $single_error["message"] . " (err code: " . $single_error["code"] . " )";
+                    if (is_object($this->objects["logs"])) {
+                        $this->objects["logs"]->add_log("cloudflare::purge_cache_urls", "Request URL: " . esc_url_raw("https://api.cloudflare.com/client/v4/zones/$this->zone_id/purge_cache"));
+                        $this->objects["logs"]->add_log("cloudflare::purge_cache_urls", "Request Body: " . json_encode(array("files" => $single_chunk)));
                     }
 
-                    $error = implode(" - ", $error);
+                    $response = wp_remote_post(
+                        esc_url_raw("https://api.cloudflare.com/client/v4/zones/$this->zone_id/purge_cache"),
+                        $cf_headers
+                    );
 
-                    return false;
+                    if (is_wp_error($response)) {
+                        $error = __('Connection error: ', 'wp-cloudflare-page-cache') . $response->get_error_message();
+                        $this->objects["logs"]->add_log("cloudflare::purge_cache_urls", "Error wp_remote_post: " . $error);
+                        return false;
+                    }
+
+                    $response_body = wp_remote_retrieve_body($response);
+
+                    if (is_object($this->objects["logs"])) {
+                        $this->objects["logs"]->add_log("cloudflare::purge_cache_urls", "Response: " . $response_body);
+                    }
+
+                    $json = json_decode($response_body, true);
+
+                    if ($json["success"] == false) {
+
+                        $error = array();
+
+                        foreach ($json["errors"] as $single_error) {
+                            $error[] = $single_error["message"] . " (err code: " . $single_error["code"] . " )";
+                        }
+
+                        $error = implode(" - ", $error);
+
+                        return false;
+
+                    }
 
                 }
 
-            }
+            //}
 
         }
         else {
 
-            $cf_headers["body"] = json_encode(array("files" => $urls));
+            $cf_headers["body"] = json_encode(array("files" => array_values($urls)));
 
             if (is_object($this->objects["logs"])) {
                 $this->objects["logs"]->add_log("cloudflare::purge_cache_urls", "Request URL: " . esc_url_raw("https://api.cloudflare.com/client/v4/zones/$this->zone_id/purge_cache"));
@@ -726,7 +800,7 @@ class SWCFPC_Cloudflare
                     return false;
                 }
 
-                $this->account_id_list[] = $account_data["id"];
+                $this->account_id_list[] = array("id" => $account_data["id"], "name" => $account_data["name"]);
 
             }
 
@@ -737,19 +811,62 @@ class SWCFPC_Cloudflare
     }
 
 
+    function get_current_account_id(&$error) {
+
+        $account_id = "";
+
+        if( count($this->account_id_list) == 0 )
+            $this->get_account_ids( $error );
+
+        if( count($this->account_id_list) == 0 ) {
+            $this->objects["logs"]->add_log("cloudflare::get_current_account_id", "Unable to retrive an account ID: $error" );
+            return false;
+        }
+
+        if( count($this->account_id_list) > 1 ) {
+
+            foreach($this->account_id_list as $account_data) {
+
+                if( strstr( strtolower($account_data["name"]), strtolower($this->email) ) !== false ) {
+                    $account_id = $account_data["id"];
+                    break;
+                }
+
+            }
+
+        }
+        else {
+            $account_id = $this->account_id_list[0]["id"];
+        }
+
+        if( $account_id == "" ) {
+            $error = __('Unable to find a valid account ID.', 'wp-cloudflare-page-cache');
+            return false;
+        }
+
+        return $account_id;
+
+    }
+
+
     function worker_get_list(&$error) {
 
         $this->objects = $this->main_instance->get_objects();
 
         $workers_id_list = array();
         $cf_headers      = $this->get_api_headers();
+        $account_id      = $this->get_current_account_id($error);
+
+        $this->objects["logs"]->add_log("cloudflare::worker_get_list", "I'm using the account ID: ".$account_id );
+
+        $cloudflare_request_url = "https://api.cloudflare.com/client/v4/accounts/$account_id/workers/scripts";
 
         if( is_object($this->objects["logs"]) ) {
-            $this->objects["logs"]->add_log("cloudflare::worker_get_list", "Request ".esc_url_raw( "https://api.cloudflare.com/client/v4/zones/$this->zone_id/workers/scripts" ) );
+            $this->objects["logs"]->add_log("cloudflare::worker_get_list", "Request ".esc_url_raw( $cloudflare_request_url ) );
         }
 
         $response = wp_remote_get(
-            esc_url_raw( "https://api.cloudflare.com/client/v4/zones/$this->zone_id/workers/scripts" ),
+            esc_url_raw( $cloudflare_request_url ),
             $cf_headers
         );
 
@@ -777,6 +894,8 @@ class SWCFPC_Cloudflare
 
             $error = implode(" - ", $error);
 
+            $this->objects["logs"]->add_log("cloudflare::worker_get_list", "Error: ".$error );
+
             return false;
 
         }
@@ -785,12 +904,9 @@ class SWCFPC_Cloudflare
 
             foreach( $json["result"] as $worker_data ) {
 
-                if( !isset($worker_data["id"]) ) {
-                    $error = __("Unable to retrive worker ID", 'wp-cloudflare-page-cache');
-                    return false;
+                if( isset($worker_data["id"]) ) {
+                    $workers_id_list[] = $worker_data["id"];
                 }
-
-                $workers_id_list[] = $worker_data["id"];
 
             }
 
@@ -804,29 +920,16 @@ class SWCFPC_Cloudflare
     function worker_upload(&$error) {
 
         $this->objects = $this->main_instance->get_objects();
+        $account_id    = $this->get_current_account_id($error);
 
         $cf_headers                            = $this->get_api_headers();
         $cf_headers["method"]                  = "PUT";
         $cf_headers["headers"]["Content-Type"] = "application/javascript";
         $cf_headers["body"]                    = $this->worker_content;
 
-        $cloudflare_request_url = "https://api.cloudflare.com/client/v4/zones/$this->zone_id/workers/scripts/$this->worker_id";
+        $this->objects["logs"]->add_log("cloudflare::worker_upload", "I'm using the account ID: ".$account_id );
 
-        if( $this->auth_mode == SWCFPC_AUTH_MODE_API_TOKEN ) {
-
-            if( count($this->account_id_list) == 0 )
-                $this->get_account_ids( $error );
-
-            if( count($this->account_id_list) == 0 ) {
-                $this->objects["logs"]->add_log("cloudflare::worker_upload", "Unable to retrive an account ID: $error" );
-                return false;
-            }
-
-            $this->objects["logs"]->add_log("cloudflare::worker_upload", "I'm using the account ID: ".$this->account_id_list[0] );
-
-            $cloudflare_request_url = "https://api.cloudflare.com/client/v4/accounts/".$this->account_id_list[0]."/workers/scripts/$this->worker_id";
-
-        }
+        $cloudflare_request_url = "https://api.cloudflare.com/client/v4/accounts/$account_id/workers/scripts/$this->worker_id";
 
         if( is_object($this->objects["logs"]) ) {
             $this->objects["logs"]->add_log("cloudflare::worker_upload", "Request ".esc_url_raw( $cloudflare_request_url ) );
@@ -877,27 +980,14 @@ class SWCFPC_Cloudflare
     function worker_delete(&$error) {
 
         $this->objects = $this->main_instance->get_objects();
+        $account_id    = $this->get_current_account_id($error);
 
         $cf_headers           = $this->get_api_headers();
         $cf_headers["method"] = "DELETE";
 
-        $cloudflare_request_url = "https://api.cloudflare.com/client/v4/zones/$this->zone_id/workers/scripts/$this->worker_id";
+        $this->objects["logs"]->add_log("cloudflare::worker_delete", "I'm using the account ID: ".$account_id );
 
-        if( $this->auth_mode == SWCFPC_AUTH_MODE_API_TOKEN ) {
-
-            if( count($this->account_id_list) == 0 )
-                $this->get_account_ids( $error );
-
-            if( count($this->account_id_list) == 0 ) {
-                $this->objects["logs"]->add_log("cloudflare::worker_delete", "Unable to retrive an account ID: $error" );
-                return false;
-            }
-
-            $this->objects["logs"]->add_log("cloudflare::worker_delete", "I'm using the account ID: ".$this->account_id_list[0] );
-
-            $cloudflare_request_url = "https://api.cloudflare.com/client/v4/accounts/".$this->account_id_list[0]."/workers/scripts/$this->worker_id";
-
-        }
+        $cloudflare_request_url = "https://api.cloudflare.com/client/v4/accounts/$account_id/workers/scripts/$this->worker_id";
 
         if( is_object($this->objects["logs"]) ) {
             $this->objects["logs"]->add_log("cloudflare::worker_delete", "Request ".esc_url_raw( $cloudflare_request_url ) );
@@ -946,7 +1036,7 @@ class SWCFPC_Cloudflare
         $this->objects = $this->main_instance->get_objects();
 
         $cf_headers = $this->get_api_headers();
-        $url = site_url("/*");
+        $url = home_url("/*");
 
         if( is_object($this->objects["logs"]) ) {
             $this->objects["logs"]->add_log("cloudflare::worker_route_create", "Request URL: ".esc_url_raw("https://api.cloudflare.com/client/v4/zones/$this->zone_id/workers/routes") );
@@ -1037,6 +1127,8 @@ class SWCFPC_Cloudflare
 
             $error = implode(" - ", $error);
 
+            $this->objects["logs"]->add_log("cloudflare::worker_route_get_list", "Error: ".$error );
+
             return false;
 
         }
@@ -1045,12 +1137,9 @@ class SWCFPC_Cloudflare
 
             foreach( $json["result"] as $route_data ) {
 
-                if( !isset($route_data["id"]) ) {
-                    $error = __("Unable to retrive route ID", 'wp-cloudflare-page-cache');
-                    return false;
+                if( isset($route_data["id"]) ) {
+                    $routes_list[$route_data["id"]] = array("pattern" => $route_data["pattern"], "script" => $route_data["script"]);
                 }
-
-                $routes_list[$route_data["id"]] = array("pattern" => $route_data["pattern"], "script" => $route_data["script"]);
 
             }
 
@@ -1067,6 +1156,11 @@ class SWCFPC_Cloudflare
 
         $cf_headers           = $this->get_api_headers();
         $cf_headers["method"] = "DELETE";
+
+        if( $this->worker_route_id == "" ) {
+            $this->objects["logs"]->add_log("cloudflare::worker_route_delete", "No route to delete" );
+            return false;
+        }
 
         if( is_object($this->objects["logs"]) ) {
             $this->objects["logs"]->add_log("cloudflare::worker_route_delete", "Request ".esc_url_raw( "https://api.cloudflare.com/client/v4/zones/$this->zone_id/workers/routes/$this->worker_route_id" ) );
@@ -1104,6 +1198,8 @@ class SWCFPC_Cloudflare
             return false;
 
         }
+
+        $this->worker_route_id = "";
 
         return true;
 
@@ -1230,15 +1326,50 @@ class SWCFPC_Cloudflare
         $this->objects = $this->main_instance->get_objects();
 
         // Reset old browser cache TTL
-        $this->change_browser_cache_ttl( $this->main_instance->get_single_config("cf_old_bc_ttl", 0), $error );
+        if( $this->main_instance->get_single_config("cf_old_bc_ttl", 0) != 0 )
+            $this->change_browser_cache_ttl( $this->main_instance->get_single_config("cf_old_bc_ttl", 0), $error );
 
-        // Delete worker route
-        if( $this->worker_mode == true && !$this->worker_route_delete($error) )
-            return false;
+        if( $this->worker_mode == true ) {
 
-        // Delete worker script
-        if( $this->worker_mode == true && !$this->worker_delete($error) )
-            return false;
+            $worker_route_ids = $this->worker_route_get_list( $error );
+
+            if( $worker_route_ids === false || !is_array($worker_route_ids) ) {
+                $this->objects["logs"]->add_log("cloudflare::disable_page_cache", "Unable to retrieve the worker routes list");
+                return false;
+            }
+
+            if( isset($worker_route_ids[$this->worker_route_id]) ) {
+
+                // Delete worker route
+                if (!$this->worker_route_delete($error))
+                    return false;
+
+            } else {
+
+                $this->objects["logs"]->add_log("cloudflare::disable_page_cache", "Unable to find the route ID ".$this->worker_route_id." in Cloudflare routes list, so I don't delete it: ".print_r($worker_route_ids, true) );
+
+            }
+
+            $worker_ids = $this->worker_get_list($error);
+
+            if( $worker_ids && is_array($worker_ids) && in_array($this->worker_id, $worker_ids) ) {
+
+                // Delete worker script
+                if( !$this->worker_delete($error) )
+                    return false;
+
+            }
+            else {
+
+                if( is_array($worker_ids) )
+                    $this->objects["logs"]->add_log("cloudflare::disable_page_cache", "Unable to find the worker ID ".$this->worker_id." in Cloudflare workers list, so I don't delete it: ".print_r($worker_ids, true) );
+                else
+                    $this->objects["logs"]->add_log("cloudflare::disable_page_cache", "Unable to find the worker ID to delete" );
+
+            }
+
+        }
+
 
         // Delete page rules
         if ( $this->worker_mode == false && $this->main_instance->get_single_config("cf_page_rule_id", "") != "" && !$this->delete_page_rule($this->main_instance->get_single_config("cf_page_rule_id", ""), $error)) {
@@ -1298,19 +1429,36 @@ class SWCFPC_Cloudflare
 
         if( $this->worker_mode == true ) {
 
-            // Delete old worker
-            $this->worker_delete($error);
+            $worker_route_ids = $this->worker_route_get_list( $error );
+
+            if( $worker_route_ids === false || !is_array($worker_route_ids) ) {
+                $this->objects["logs"]->add_log("cloudflare::enable_page_cache", "Unable to retrieve the worker routes list");
+                return false;
+            }
+
+            $worker_ids = $this->worker_get_list($error);
 
             // Delete existing route
-            if( $this->worker_route_id != "" ) {
+            if( isset($worker_route_ids[$this->worker_route_id]) ) {
 
-                if( !$this->worker_route_delete($error) ) {
-                    $this->main_instance->set_single_config("cf_cache_enabled", 0);
-                    $this->main_instance->update_config();
+                $this->objects["logs"]->add_log("cloudflare::enable_page_cache", "I'm deleting existing route ID ".$this->worker_route_id );
+
+                if (!$this->worker_route_delete($error))
                     return false;
-                }
 
             }
+
+            // Delete existing worker
+            if( $worker_ids && is_array($worker_ids) && in_array($this->worker_id, $worker_ids) ) {
+
+                $this->objects["logs"]->add_log("cloudflare::enable_page_cache", "I'm deleting existing worker ID ".$this->worker_id );
+
+                // Delete worker script
+                if( !$this->worker_delete($error) )
+                    return false;
+
+            }
+
 
             // Step 3a - upload worker
             if( !$this->worker_upload($error) ) {

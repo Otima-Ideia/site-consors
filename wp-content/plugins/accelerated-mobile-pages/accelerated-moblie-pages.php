@@ -3,7 +3,7 @@
 Plugin Name: Accelerated Mobile Pages
 Plugin URI: https://wordpress.org/plugins/accelerated-mobile-pages/
 Description: AMP for WP - Accelerated Mobile Pages for WordPress
-Version: 1.0.68.1
+Version: 1.0.74
 Author: Ahmed Kaludi, Mohammed Kaludi
 Author URI: https://ampforwp.com/
 Donate link: https://www.paypal.me/Kaludi/25
@@ -20,7 +20,7 @@ define('AMPFORWP_PLUGIN_DIR_URI', plugin_dir_url(__FILE__));
 define('AMPFORWP_DISQUS_URL',plugin_dir_url(__FILE__).'includes/disqus.html');
 define('AMPFORWP_IMAGE_DIR',plugin_dir_url(__FILE__).'images');
 define('AMPFORWP_MAIN_PLUGIN_DIR', plugin_dir_path( __DIR__ ) );
-define('AMPFORWP_VERSION','1.0.68.1');
+define('AMPFORWP_VERSION','1.0.74');
 define('AMPFORWP_EXTENSION_DIR',plugin_dir_path(__FILE__).'includes/options/extensions');
 if(!defined('AMPFROWP_HOST_NAME')){
 	$urlinfo = get_bloginfo('url');
@@ -301,6 +301,18 @@ function ampforwp_add_custom_rewrite_rules() {
 			}
 		}
 	}
+	if (ampforwp_get_setting('ampforwp-pagination-link-type') && is_singular()) {
+		add_rewrite_rule(
+	      '(.+?)-[0-9]+\/([0-9]{1,})\/amp$',
+	      'index.php?amp=1&name=$matches[1]&paged=$matches[2]',
+	      'top'
+	    );
+		add_rewrite_rule(
+	      '(.+?)\/([0-9]{1,})\/amp$',
+	      'index.php?amp=1&name=$matches[1]&paged=$matches[2]',
+	      'top'
+	    ); 
+    }
 }
 add_action( 'init', 'ampforwp_add_custom_rewrite_rules', 25 );
 // Delete category_base transient when it is updated #2924
@@ -680,6 +692,12 @@ function ampforwp_bundle_core_amp_files(){
 	if ( function_exists( 'jnews_get_option' ) ){
 		remove_action( 'plugins_loaded', 'jnews_amp' );
 		remove_filter( 'amp_content_sanitizers', 'jnews_amp_content_sanitize');
+	}
+	if (function_exists('wpda_hb_pro__plugins_loaded')) {
+		$url_path = trim(parse_url(add_query_arg(array()), PHP_URL_PATH),'/' );
+    	if( function_exists('ampforwp_is_amp_inURL') && ampforwp_is_amp_inURL($url_path)) {
+			remove_action('plugins_loaded', 'wpda_hb_pro__plugins_loaded');
+		}
 	}
 } 
 add_action('plugins_loaded','ampforwp_bundle_core_amp_files', 8);
@@ -1285,6 +1303,9 @@ function ampforwp_vendor_is_amp_endpoint(){
 	global $pagenow;
 	if ( ! function_exists('amp_activate') && ! function_exists('is_amp_endpoint' ) && 'plugins.php' !== $pagenow ) {
 		function is_amp_endpoint(){
+			if(true == ampforwp_get_setting('ampforwp-amp-takeover')){
+				return true;
+			}
 			return false !== get_query_var( AMP_QUERY_VAR, false );
 		}
 	}

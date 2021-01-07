@@ -71,26 +71,24 @@ class SWCFPC_Varnish
 
         }
 
+        $parseUrl = $purge_all ? parse_url( site_url() ) : parse_url($url);
+
+        // Determine the schema
+        $schema = 'http://';
+        if (isset($parseUrl['scheme'])) {
+            $schema = $parseUrl['scheme'].'://';
+        }
+
         if ($purge_all) {
 
             if( $this->provider == "cloudways" ) {
-                $schema = 'http://';
-                $finalURL = sprintf("%s%s:%d%s", $schema, $this->hostname, $this->port, "/.*");
+                $finalURL = sprintf("%s%s%s", $schema, $this->hostname, "/.*");
             }
             else {
-                $schema = 'http://';
                 $finalURL = sprintf("%s%s:%d%s", $schema, $this->hostname, $this->port, "/*");
             }
 
         } else {
-
-            $parseUrl = parse_url($url);
-
-            // Determine the schema
-            $schema = 'http://';
-            if (isset($parseUrl['scheme'])) {
-                $schema = $parseUrl['scheme'] . '://';
-            }
 
             // Determine the path
             $path = '';
@@ -98,15 +96,18 @@ class SWCFPC_Varnish
                 $path = $parseUrl['path'];
             }
 
-            $finalURL = sprintf("%s%s:%d%s", $schema, $this->hostname, $this->port, $path);
+            if( $this->provider == "cloudways" ) {
+                $finalURL = sprintf("%s%s%s", $schema, $this->hostname, $path);
+            }
+            else {
+                $finalURL = sprintf("%s%s:%d%s", $schema, $this->hostname, $this->port, $path);
+            }
 
             if (!empty($parseUrl['query'])) {
                 $finalURL .= '?' . $parseUrl['query'];
             }
 
         }
-
-        $this->objects["logs"]->add_log("varnish::purge_single_url_cache", "Send purging request to $finalURL");
 
         $request_args = array(
             'method' => $purge_all ? $this->whole_purge_method : $this->single_purge_method,
@@ -117,7 +118,16 @@ class SWCFPC_Varnish
             'sslverify' => false,
         );
 
+        $this->objects["logs"]->add_log("varnish::purge_single_url_cache", "Send purging request to $finalURL");
+
+        if( $this->objects["logs"]->get_verbosity() == SWCFPC_LOGS_HIGH_VERBOSITY )
+            $this->objects["logs"]->add_log("varnish::purge_single_url_cache", "Request args ".print_r($request_args, true));
+
+        // Send purge request to Varnish
         $response = wp_remote_request($finalURL, $request_args);
+
+        if( $this->objects["logs"]->get_verbosity() == SWCFPC_LOGS_HIGH_VERBOSITY )
+            $this->objects["logs"]->add_log("varnish::purge_single_url_cache", "Response: ".print_r($response, true));
 
         if ( is_wp_error($response) || $response['response']['code'] != '200' ) {
 
@@ -133,10 +143,22 @@ class SWCFPC_Varnish
                 $this->objects["logs"]->add_log("varnish::purge_single_url_cache", "Response code " . $response['response']['code'] . " - Retry using $schema");
 
             if ($purge_all) {
-                $finalURL = sprintf("%s%s:%d%s", $schema, $this->hostname, $this->port, "/*");
+
+                if( $this->provider == "cloudways" ) {
+                    $finalURL = sprintf("%s%s%s", $schema, $this->hostname, "/.*");
+                }
+                else {
+                    $finalURL = sprintf("%s%s:%d%s", $schema, $this->hostname, $this->port, "/*");
+                }
+
             } else {
 
-                $finalURL = sprintf("%s%s:%d%s", $schema, $this->hostname, $this->port, $path);
+                if( $this->provider == "cloudways" ) {
+                    $finalURL = sprintf("%s%s%s", $schema, $this->hostname, $path);
+                }
+                else {
+                    $finalURL = sprintf("%s%s:%d%s", $schema, $this->hostname, $this->port, $path);
+                }
 
                 if (!empty($parseUrl['query'])) {
                     $finalURL .= '?' . $parseUrl['query'];
@@ -146,21 +168,19 @@ class SWCFPC_Varnish
 
             $this->objects["logs"]->add_log("varnish::purge_single_url_cache", "Send purging request to $finalURL");
 
+            if( $this->objects["logs"]->get_verbosity() == SWCFPC_LOGS_HIGH_VERBOSITY )
+                $this->objects["logs"]->add_log("varnish::purge_single_url_cache", "Request args ".print_r($request_args, true));
+
+            // Send new purge request to Varnish
             $response = wp_remote_request($finalURL, $request_args);
+
+            if( $this->objects["logs"]->get_verbosity() == SWCFPC_LOGS_HIGH_VERBOSITY )
+                $this->objects["logs"]->add_log("varnish::purge_single_url_cache", "Response: ".print_r($response, true));
 
             if (is_wp_error($response)) {
                 $error = $response->get_error_message();
                 return false;
             }
-            {
-                $body = wp_remote_retrieve_body($response);
-                $this->objects["logs"]->add_log("varnish::purge_single_url_cache", "Response body: $body");
-            }
-
-        } else {
-
-            $body = wp_remote_retrieve_body($response);
-            $this->objects["logs"]->add_log("varnish::purge_single_url_cache", "Response body: $body");
 
         }
 

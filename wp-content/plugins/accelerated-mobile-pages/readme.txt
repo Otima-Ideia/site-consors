@@ -3,8 +3,8 @@ Contributors: mohammed_kaludi, ahmedkaludi, ampforwp
 Tags: AMP, accelerated mobile pages, mobile, amp project, google amp, amp wp, google, plugin, SEO
 Donate link: https://www.paypal.me/Kaludi/25
 Requires at least: 3.0
-Tested up to: 5.5
-Stable tag: 1.0.68.1
+Tested up to: 5.6
+Stable tag: 1.0.74
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
@@ -190,32 +190,30 @@ You can contact us from [here](https://ampforwp.com/contact/)
 
 == Changelog ==
 
-= 1.0.68.1 (10th November 2020) =
-* Fixed: Missing amphtml on product pages #4822
-* Fixed: Debug warnings #4821
+= 1.0.74 (30th December 2020) =
+* Improvement: Added Oxygen Pagebuilder Compatibility for AMP Pagebuilder Extension #4868
+* Improvement: Added disable right click option on AMP for copy protection #4877
+* Fixed: Validation Errors when WP Daddy Builder Pro is active #4879
+* Fixed: The yoast meta title is not reflecting in AMP with Smartmag theme #4885
 
-= 1.0.68 (9th November 2020) =
-* Fixed: Validation error occurs when input type image is added #4785
-* Fixed: Featured images are not showing when "Enable lazy load images" option is enabled in the "DEUS" Theme #4710
-* Fixed: AMP Push Notification - Dropdown issue #4812
-* Fixed: Italic style caption of gallery #4806
-* Fixed: The canonical links are not generating for the coupon store when YOAST Plugin is active with AMPFORWP #4811
-* Fixed: Content not displayed in AMP post/pages with plain permalink #4814
-* Fixed: Tables created with 2 columns displaying 1 extra column on mobile view #4765
-* Fixed: Content appearing in excerpt on single post #4798
-* Fixed: Code improvment for amp pagebuilder's category-module #4660
+= 1.0.73 (23rd December 2020) =
+* Fixed: Javascript issues after update to WordPress 5.6 #4867
+* Fixed: '-' symbol is not appearing on post title #4866
+* Fixed: GDPR strings are not getting translated in WPML #4874
+* Fixed: AMP Browser caching policy updated #4876
+* Fixed: Validation Errors when WP Daddy Builder Pro is active #4879
+* Fixed: Vuukle comments box appearing twice in AMP #4878
+* Fixed: Validation error when 'area' tag is added in post content #4882
+* Fixed: Validation error "Custom JS is not allowed" with ALL in one SEO pro #4883
 
-= 1.0.67 (4th November 2020) =
-* Improvement: Optimize Pagespeed score by implimenting AMP video lightbox #4531
-* Improvement: Added Paid Memberships PRO for AMP Extension #4737
-* Improvement: Added help section for the users in Options panel #4683
-* Improvement: Added code improvement in Tag base remover and category base remover #4664
-* Improvement: Added UberMenu 3 Compatiblity #4732
-* Improvement: Added filter to overwrite the scripts #4642
-* Fixed: Style amp-custom unterminated comment Error on AMP #4792
-* Fixed: Proper styling of Header right side icons in Design 2 #3935
-* Fixed: Revolution Slider not working in AMP #4669
-* Fixed: Additional characters at the end of footer text in Design Two #4805
-* Fixed: Related thumbnail image title is getting break and leading to the validation error #4804
+= 1.0.72 (17th December 2020) =
+* Improvement: Added i2Pros and cons plugin compatibility #4837
+* Improvement: Added WP-PageNavi plugin compatibility #4831
+* Improvement: Added Categories Images plugin compatibility #3973
+* Improvement: Added webp images on the homepage and Archives with Imagify plugin #4725
+* Improvement: Added Recipe Compatibility for AMP Extension #4868
+* Fixed: Amp option panel breaks when AECC Global Theme is activated. #4863
+* Fixed: Facebook page embed fails #4871
+* Fixed: Referenced AMP URL is self-canonical AMP while using All in One Seo #4873
 
 Full changelog available [ at changelog.txt](https://plugins.svn.wordpress.org/accelerated-mobile-pages/trunk/changelog.txt)

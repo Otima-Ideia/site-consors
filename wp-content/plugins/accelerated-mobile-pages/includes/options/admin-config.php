@@ -700,6 +700,18 @@ $extension_listing_array = array(
                             'is_activated'=>(is_plugin_active('paid-memberships-pro-for-amp/paid-memberships-pro-for-amp.php')? 1 : 2),
                         ),
                         array(
+                            'name'=>'Recipe Compatibility for AMP',
+                            'class'=>'new-ext',
+                            'desc'=>'Add Recipes Support in AMP',
+                            'img_src'=>AMPFORWP_IMAGE_DIR . '/recipe-compatibility-for-amp.png',
+                            'price'=>'$39',
+                            'url_link'=>'https://ampforwp.com/addons/recipe-compatibility-for-amp/',
+                            'plugin_active_path'=> 'recipe-compatibility-for-amp/recipe-compatibility-for-amp.php',
+                            'item_name'=>'Recipe Compatibility for AMP',
+                            'store_url'=>'https://accounts.ampforwp.com',
+                            'is_activated'=>(is_plugin_active('recipe-compatibility-for-amp/recipe-compatibility-for-amp.php')? 1 : 2),
+                        ),
+                        array(
                             'name'=>'Polls for AMP',
                             'class'=>'new-ext',
                             'desc'=>'Add Polls Support in AMP',
@@ -998,30 +1010,9 @@ $freepro_listing = '
                             <div class="fe-2">
                                 <div class="fe-t">
                                     <img src="'.AMPFORWP_IMAGE_DIR . '/tick.png" />
-                                    <h4>Structured Data</h4>
-                                </div>
-                                <p>Advanced Schema integration in AMP and WordPress.</p>
-                            </div>
-                            <div class="fe-2">
-                                <div class="fe-t">
-                                    <img src="'.AMPFORWP_IMAGE_DIR . '/tick.png" />
-                                    <h4>Advanced Custom Field</h4>
-                                </div>
-                                <p>Built-in tools to help you impliment ACF easily in AMP.</p>
-                            </div>
-                            <div class="fe-2">
-                                <div class="fe-t">
-                                    <img src="'.AMPFORWP_IMAGE_DIR . '/tick.png" />
                                     <h4>Ratings</h4>
                                 </div>
                                 <p>Easily add Rating to the posts. Supports 3 popular rating plugins.</p>
-                            </div>
-                            <div class="fe-2">
-                                <div class="fe-t">
-                                    <img src="'.AMPFORWP_IMAGE_DIR . '/tick.png" />
-                                    <h4>Design Catalogue</h4>
-                                </div>
-                                <p>AMP Layouts has 6 pre-built designs, We are constantly adding every week.</p>
                             </div>
                             <div class="fe-2">
                                 <div class="fe-t">
@@ -1043,6 +1034,13 @@ $freepro_listing = '
                                     <h4>Innovation</h4>
                                 </div>
                                 <p>Be the first one to get the innovative features that we build in the future.</p>
+                            </div>
+                            <div class="fe-2">
+                                <div class="fe-t">
+                                    <img src="'.AMPFORWP_IMAGE_DIR . '/tick.png" />
+                                    <h4>45+ AMP Extensions</h4>
+                                </div>
+                                <p>Super Charge your AMP pages with Powerful AMP Extensions</p>
                             </div>
                         </div><!-- /. fet -->
                         <div class="pr-btn">
@@ -1412,9 +1410,9 @@ if(get_theme_support('amp-template-mode')){
 }
 $proDetailsProvide = '<a class="technical_support_btn_txt" href="https://ampforwp.com/support/" target="_blank">'.esc_html__('Technical Support','accelerated-mobile-pages').'</a> <a class="premium_features_btn" href="https://ampforwp.com/membership/#utm_source=options-panel&utm_medium=view_pro_features_btn&utm_campaign=AMP%20Plugin" target="_blank">Upgrade to PRO</a> ';
 if($ampforwp_nameOfUser!=""){
-    $proDetailsProvide = "<span class='extension-menu-call'><span class='activated-plugins'>Hello, ".esc_html($ampforwp_nameOfUser)."</span> <a class='' href='".esc_url($amppro_settings_url)."'><i class='dashicons-before dashicons-admin-generic'></i></a></span>";
+    $proDetailsProvide = "<span class='extension-menu-call'><span class='activated-plugins'>Hello, ".esc_html($ampforwp_nameOfUser)."</span> <a class='' href='".esc_url(admin_url('admin.php?page=amp_options&tabid=opt-go-premium'))."'><i class='dashicons-before dashicons-admin-generic'></i></a></span>";
 }elseif($ampforwp_is_productActivated){
-    $proDetailsProvide = "<span class='extension-menu-call'>One more Step <a class='premium_features_btn' href='".esc_url($amppro_enter_keyurl)."'>Enter license here</a></span>";
+    $proDetailsProvide = "<span class='extension-menu-call'>One more Step <a class='premium_features_btn' href='".esc_url(admin_url('admin.php?tabid=opt-go-premium&page=amp_options'))."'>Enter license here</a></span>";
 }
 if(function_exists('amp_activate') ){
     $proDetailsProvide = "<a class='premium_features_btn_txt' href=\"#\"> AMP by Automattic compatibility has been activated</a>";
@@ -1431,7 +1429,9 @@ if( in_array( 'administrator', $user->roles ) ) {
 }elseif( in_array( 'author', $user->roles ) && in_array('author', $amp_access)){
     $permissions = 'edit_posts';
 }
-
+if (class_exists('WPSEO_Options') && in_array( 'wpseo_manager', $user->roles ) && in_array('wpseo_manager', $amp_access)) {
+    $permissions = 'edit_pages'; 
+}
 $args = array(
     // TYPICAL -> Change these values as you need/desire
     'opt_name'              => 'redux_builder_amp', // This is where your data is stored in the database and also becomes your global variable name.
@@ -2963,6 +2963,14 @@ Redux::setSection( $opt_name, array(
                     )
                 ), 
                     array(
+                       'id'       => 'ampforwp-right-click-disable',
+                       'type'     => 'switch',
+                       'title'    => esc_html__('Disable Right Click', 'accelerated-mobile-pages'),
+                       'tooltip-subtitle' => sprintf('%s <a href="%s" target="_blank">%s</a> %s', 
+                         esc_html__('Enable this option if you want a disable the right click in AMP to protect your data from copying', 'accelerated-mobile-pages'), esc_url('https://ampforwp.com/tutorials/article/how-to-disable-right-click-in-amp/'),esc_html__('Click Here','accelerated-mobile-pages'), esc_html__('for more info','accelerated-mobile-pages')),
+                       'default'  => false,
+                ),
+                    array(
                         'id'       => 'amp-header-text-area-for-html',
                         'type'     => 'textarea',
                         'title'    => esc_html__('Enter HTML in Head', 'accelerated-mobile-pages'),
@@ -4150,7 +4158,7 @@ Redux::setSection( $opt_name, array(
                         'id'       => 'ampforwp-infinite-scroll',
                         'type'     => 'switch',
                         'title'    => esc_html__('Infinite Scroll (Experimental)', 'accelerated-mobile-pages'),
-                        'tooltip-subtitle' => sprintf('%s <a href="%s" target="_blank">%s</a>', esc_html__('Read more about it here:', 'accelerated-mobile-pages'), esc_url('https://www.ampproject.org/docs/reference/components/amp-next-page'), esc_html__('amp-next-page','accelerated-mobile-pages')),
+                        'tooltip-subtitle' => sprintf('%s <a href="%s" target="_blank">%s</a>', esc_html__('Read more about it', 'accelerated-mobile-pages'), esc_url('https://ampforwp.com/tutorials/article/infinite-scroll-feature-in-amp/'), esc_html__('here:','accelerated-mobile-pages')),
                         'default' => false,
                     ),
                     $newspaper_theme_check,
@@ -5981,6 +5989,16 @@ $single_page_options = array(
             ),
             'default'  => '1',
             'required' => array('amp-pagination' , '=' , '1'),
+        ),
+        array(
+            'id'       => 'ampforwp-pagination-link-type',
+            'class'    => 'child_opt child_opt_arrow',
+            'type'     => 'switch',
+             'title'    => esc_html__('Change Pagination Links to /amp', 'accelerated-mobile-pages'),
+            'default'  => '0',
+            'required' => array('amp-pagination' , '=' , '1'),
+            'tooltip-subtitle' => sprintf('%s', 
+             esc_html__('Enable this option if post pagination link with ?amp=1 does not work. It will change pagination link ?amp=1 to /amp', 'accelerated-mobile-pages')), 
         ),
         array(
             'id'       => 'ampforwp-swift-recent-posts',

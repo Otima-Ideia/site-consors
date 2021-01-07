@@ -11,6 +11,8 @@ class SWCFPC_Logs
     private $log_file_path       = false;
     private $log_file_url        = false;
 
+    private $verbosity = 1; // 1: standard, 2: high
+
     function __construct($log_file_path, $log_file_url, $logging_enabled, $max_file_size, $main_instance)
     {
 
@@ -49,6 +51,23 @@ class SWCFPC_Logs
     }
 
 
+    function set_verbosity($verbosity) {
+
+        $verbosity = (int) $verbosity;
+
+        if( $verbosity != SWCFPC_LOGS_STANDARD_VERBOSITY && $verbosity != SWCFPC_LOGS_HIGH_VERBOSITY )
+            $verbosity = SWCFPC_LOGS_STANDARD_VERBOSITY;
+
+        $this->verbosity = $verbosity;
+
+    }
+
+
+    function get_verbosity() {
+        return $this->verbosity;
+    }
+
+
     function add_log($identifier, $message) {
 
         if( $this->is_logging_enabled && $this->log_file_path ) {
@@ -84,22 +103,19 @@ class SWCFPC_Logs
 
     function download_logs() {
 
-        if( isset($_GET['swcfpc_download_log']) ) {
-
-            $file_log = file_get_contents($this->log_file_path);
-            $filename = "debug.log";
+        if( isset($_GET['swcfpc_download_log']) && file_exists($this->log_file_path) ) {
 
             header('Content-Description: File Transfer');
             header('Content-Type: application/octet-stream');
-            header('Content-Disposition: attachment; filename=' . $filename);
+            header('Content-Disposition: attachment; filename=debug.log');
             header('Content-Transfer-Encoding: binary');
             header('Connection: Keep-Alive');
             header('Expires: 0');
-            header('Cache-Control: must-revalidate, post-check=0, pre-check=0');
+            header('Cache-Control: no-cache, must-revalidate, post-check=0, pre-check=0, max-age=0, s-maxage=0');
             header('Pragma: public');
-            header('Content-Length: ' . strlen($file_log));
-
-            die( $file_log );
+            header('Content-Length: ' . filesize($this->log_file_path));
+            readfile($this->log_file_path);
+            exit;
 
         }
 

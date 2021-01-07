@@ -47,6 +47,15 @@ function ampforwp_add_admin_styling($hook_suffix){
         }
         remove_all_actions('admin_notices');
         remove_all_actions('all_admin_notices');
+        if(class_exists('WC_Ecpay_Apple_Pay')){
+            remove_all_actions('admin_footer');
+        }
+        if (function_exists('wps_pf_pr_filter_register')) {
+            wp_dequeue_script('wpspf-main-js-3');
+        }
+        if (function_exists('aeccglobal_setup')) {
+            remove_action( 'admin_footer', 'js_update_show_in_slider' );
+        }
         add_action('admin_notices', 'ampforwp_dev_mode_notice');
         add_action('admin_notices', 'ampforwp_plugins_manager_notice');
         add_action('admin_notices', 'ampforwp_ampwptheme_notice');
@@ -221,6 +230,7 @@ function ampforwp_the_content_filter_full( $content_buffer ) {
         // xlink attribute causes Validatation Issues #1149
         $content_buffer = preg_replace('/xlink="href"/','',$content_buffer);
         $content_buffer = preg_replace('/!important/', '' , $content_buffer);
+        $content_buffer = preg_replace('/<area(.*?)>/', '', $content_buffer);
         //  Compatibility with the footnotes plugin. #2447
         if(class_exists('MCI_Footnotes')){
         $footnote_collapse_link = '';

@@ -1,3 +1,17 @@
+#wp-admin-bar-wp-cloudflare-super-page-cache-toolbar-container.bullet-green .ab-icon::before,
+#wp-admin-bar-wp-cloudflare-super-page-cache-toolbar-container.bullet-green:hover .ab-icon::before {
+    content: "\f176";
+    color: #02ca02;
+    font-size: 16px;
+}
+
+#wp-admin-bar-wp-cloudflare-super-page-cache-toolbar-container.bullet-red .ab-icon::before,
+#wp-admin-bar-wp-cloudflare-super-page-cache-toolbar-container.bullet-red:hover .ab-icon::before {
+    content: "\f176";
+    color: #d40000;
+    font-size: 16px;
+}
+
 .main_section input[type=text],
 .main_section input[type=password],
 .main_section input[type=email],
@@ -77,6 +91,10 @@
     border: 1px solid #f38020 !important;
     background: #f38020 !important;
     color: #fff !important;
+}
+
+.ui-dialog {
+    z-index: 1001;
 }
 
 .swcfpc_please_wait {
@@ -568,45 +586,39 @@
     color: #23282d;
 }
 
-.swcfpc_faq_accordion .swcfpc_faq_answer {
-    padding: 15px 20px;
-}
-
-.swcfpc_faq_accordion .swcfpc_faq_answer p {
-    margin: 0;
-    line-height: 1.7em;
-    font-size: 15px;
-}
-
-.swcfpc_faq_answer {
-    height: auto !important;
-    border-color: #ebebeb;
-    margin-bottom: 5px;
-}
-
-.swcfpc_faq_question {
+.swcfpc_faq_accordion  .swcfpc_faq_question {
     background: #ebebeb;
     color: #333;
+    display: block;
+    cursor: pointer;
+    position: relative;
+    margin: 2px 0 0 0;
+    padding: .5em .5em .5em .7em;
+    min-height: 0;
+    font-size: 14px;
+    border-radius: 4px;
+    font-weight: 400;
 }
 
-.swcfpc_faq_accordion .swcfpc_faq_question .ui-accordion-header-icon {
-    display: inline-block;
-    margin-right: 10px;
-}
-
-.swcfpc_faq_question.ui-state-active {
+.swcfpc_faq_accordion .swcfpc_faq_question.active,
+.swcfpc_faq_accordion .swcfpc_faq_question:hover {
     background: #f38020;
     color: #fff;
     border-color: #f38020;
-    outline: none;
 }
 
-.swcfpc_faq_question.ui-state-default {
-    outline: none;
-    margin-bottom: 5px !important;
+.swcfpc_faq_accordion .swcfpc_faq_answer {
+    padding: 15px 20px;
+    height: auto!important;
+    border: 1px solid #ebebeb;
+    margin-bottom: 5px;
+    box-sizing: border-box;
+    background: #fff;
+    border-top: 0;
+    display: none;
 }
 
-.swcfpc_faq_answer ul {
+.swcfpc_faq_accordion  .swcfpc_faq_answer ul {
     list-style: revert;
     margin-left: 2em;
 }

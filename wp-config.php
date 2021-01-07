@@ -1,4 +1,5 @@
 <?php
+define('WP_AUTO_UPDATE_CORE', 'minor');// This setting is required to make sure that WordPress updates can be properly managed in WordPress Toolkit. Remove this line if this WordPress website is not managed by WordPress Toolkit anymore.
 /**
  * As configurações básicas do WordPress
  *

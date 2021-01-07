@@ -217,13 +217,16 @@ function wp_get_menu_array($current_menu) {
 }
 
 function simpletheme_script(){
-	wp_enqueue_style("bs_css", "https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/css/bootstrap.min.css");
+	/*wp_enqueue_style("bs_css", "https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/css/bootstrap.min.css");*/
 	wp_enqueue_script("bs_js", "https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/js/bootstrap.min.js");
-	wp_enqueue_script("jQuery", "https://code.jquery.com/jquery-3.5.1.slim.min.js");
+	/*wp_enqueue_script("jQuery", "https://code.jquery.com/jquery-3.5.1.slim.min.js");*/
+	wp_enqueue_script("jQuery", get_stylesheet_directory_uri() . '/assets/js/jquery-3.5.1.min.js');
 	wp_enqueue_script("jquery_countTo", get_stylesheet_directory_uri() . '/assets/js/jquery.countTo.js', array( 'jquery' ));
 	wp_enqueue_script("maskedInput", "https://cdnjs.cloudflare.com/ajax/libs/jquery.maskedinput/1.4.1/jquery.maskedinput.min.js");
-	wp_enqueue_style("Font-Awesome", "https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.1/css/all.min.css");
-
+	/*wp_enqueue_style("Font-Awesome", "https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.1/css/all.min.css");*/
+		wp_enqueue_style("bootstrap", "https://www.consors.com.br/wp-content/themes/hello-elementor/assets/css/bootstrap.min.css");
+// 	wp_enqueue_style("pureCss", "https://www.consors.com.br/wp-content/themes/hello-elementor/assets/css/styles.pure.css");
+	/*wp_enqueue_style("Style", "https://www.consors.com.br/wp-content/themes/hello-elementor/assets/css/style.css");*/
 
 }
 add_action("wp_enqueue_scripts","simpletheme_script");
@@ -315,6 +318,7 @@ function theme_xyz_header_metadata() {
 	<link rel="icon" href="https://www.consors.com.br/antigo/wp-content/uploads/2020/04/cropped-favicon-192x192.png" sizes="192x192" />
 	<link rel="apple-touch-icon" href="https://www.consors.com.br/antigo/wp-content/uploads/2020/04/cropped-favicon-180x180.png" />
 	<meta name="msapplication-TileImage" content="https://www.consors.com.br/antigo/wp-content/uploads/2020/04/cropped-favicon-270x270.png" />-->
+	<link rel="stylesheet" id="Style-css" href="https://www.consors.com.br/wp-content/themes/hello-elementor/assets/css/style.css" type="text/css" media="all">
 
   <?php
 

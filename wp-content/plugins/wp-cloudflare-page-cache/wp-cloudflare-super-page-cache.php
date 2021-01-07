@@ -3,7 +3,7 @@
  * Plugin Name:  WP Cloudflare Super Page Cache
  * Plugin URI:   https://www.speedywordpress.it/
  * Description:  Speed up your website by enabling page caching on a Cloudflare free plans.
- * Version:      4.3.6
+ * Version:      4.3.9.2
  * Author:       Salvatore Fresta
  * Author URI:   https://www.salvatorefresta.net/
  * License:      GPLv2 or later
@@ -18,6 +18,8 @@ if( !class_exists('SW_CLOUDFLARE_PAGECACHE') ) {
     define('SWCFPC_PLUGIN_FORUM_URL', 'https://wordpress.org/support/plugin/wp-cloudflare-page-cache/');
     define('SWCFPC_AUTH_MODE_API_KEY',   0);
     define('SWCFPC_AUTH_MODE_API_TOKEN', 1);
+    define('SWCFPC_LOGS_STANDARD_VERBOSITY', 1);
+    define('SWCFPC_LOGS_HIGH_VERBOSITY', 2);
 
     if( !defined('SWCFPC_PRELOADER_MAX_POST_NUMBER') )
         define('SWCFPC_PRELOADER_MAX_POST_NUMBER', 50);
@@ -35,7 +37,7 @@ if( !class_exists('SW_CLOUDFLARE_PAGECACHE') ) {
 
         private $config   = false;
         private $objects  = array();
-        private $version  = '4.3.6';
+        private $version  = '4.3.9.2';
 
         function __construct() {
 
@@ -98,6 +100,8 @@ if( !class_exists('SW_CLOUDFLARE_PAGECACHE') ) {
             else
                 $this->objects["logs"] = new SWCFPC_Logs( $log_file_path, $log_file_url, false, $this->get_single_config("log_max_file_size", 2), $this );
 
+            $this->objects["logs"]->set_verbosity( $this->get_single_config("log_verbosity", SWCFPC_LOGS_STANDARD_VERBOSITY) );
+
             $this->objects["cloudflare"] = new SWCFPC_Cloudflare(
                 $this->get_single_config("cf_auth_mode"),
                 $this->get_cloudflare_api_key(),
@@ -116,7 +120,7 @@ if( !class_exists('SW_CLOUDFLARE_PAGECACHE') ) {
             $this->objects["varnish"] = new SWCFPC_Varnish( $this );
             $this->objects["backend"] = new SWCFPC_Backend( $this );
 
-            if( strcasecmp($_SERVER['REQUEST_METHOD'], "GET") == 0 && ( !defined( 'WP_CLI' ) || (defined('WP_CLI') && WP_CLI === false) ) && !is_admin() && !$this->is_login_page() && $this->get_single_config("cf_fallback_cache", 0) > 0 && $this->objects["cache_controller"]->is_cache_enabled() ) {
+            if( ( !defined( 'WP_CLI' ) || (defined('WP_CLI') && WP_CLI === false) ) && strcasecmp($_SERVER['REQUEST_METHOD'], "GET") == 0 && !is_admin() && !$this->is_login_page() && $this->get_single_config("cf_fallback_cache", 0) > 0 && $this->objects["cache_controller"]->is_cache_enabled() ) {
                 $this->objects["fallback_cache"]->fallback_cache_retrive_current_page();
             }
 
@@ -161,7 +165,7 @@ if( !class_exists('SW_CLOUDFLARE_PAGECACHE') ) {
             $config["cf_auto_purge_all"]                  = 0;
             $config["cf_auto_purge_on_comments"]          = 0;
             $config["cf_cache_enabled"]                   = 0;
-            $config["cf_maxage"]                          = 604800; // 1 week
+            $config["cf_maxage"]                          = 31536000; // 1 year
             $config["cf_browser_maxage"]                  = 60; // 1 minute
             $config["cf_post_per_page"]                   = get_option( 'posts_per_page', 0);
             $config["cf_purge_url_secret_key"]            = $this->generate_password(20, false, false);
@@ -171,8 +175,9 @@ if( !class_exists('SW_CLOUDFLARE_PAGECACHE') ) {
             $config["cf_fallback_cache_auto_purge"]       = 1;
             $config["cf_fallback_cache_curl"]             = 0;
             $config["cf_fallback_cache_excluded_urls"]    = array();
-            $config["cf_fallback_cache_excluded_cookies"] = array("wordpress_logged_in_", "wp-", "comment_", "woocommerce_", "wordpressuser_", "wordpresspass_", "wordpress_sec_");
+            $config["cf_fallback_cache_excluded_cookies"] = array("^wordpress_logged_in_", "^wp-", "^comment_", "^woocommerce_", "^wordpressuser_", "^wordpresspass_", "^wordpress_sec_");
             $config["cf_fallback_cache_save_headers"]     = 0;
+            $config["cf_fallback_cache_prevent_cache_urls_without_trailing_slash"] = 1;
             $config["cf_preloader"]                       = 1;
             $config["cf_preloader_start_on_purge"]        = 1;
             $config["cf_preloader_nav_menus"]             = array();
@@ -180,12 +185,15 @@ if( !class_exists('SW_CLOUDFLARE_PAGECACHE') ) {
             $config["cf_preload_excluded_post_types"]     = array("attachment", "jet-menu", "elementor_library", "jet-theme-core");
             $config["cf_preload_sitemap_urls"]            = array();
             $config["cf_woker_enabled"]                   = 0;
-            $config["cf_woker_id"]                        = "swcfpc_worker";
+            $config["cf_woker_id"]                        = "swcfpc_worker_".time();
             $config["cf_woker_route_id"]                  = "";
             $config["cf_disable_cache_buster"]            = 0;
+            $config["cf_worker_bypass_cookies"]           = array();
+            $config["cf_purge_only_html"]                 = 0;
+            $config["cf_disable_cache_purging_queue"]     = 0;
 
             // Pages
-            $config["cf_excluded_urls"]                 = array("/*ao_noptirocket*", "/*jetpack=comms*");
+            $config["cf_excluded_urls"]                 = array("/*ao_noptirocket*", "/*jetpack=comms*", "/*kinsta-monitor*", "*ao_speedup_cachebuster*");
             $config["cf_bypass_front_page"]             = 0;
             $config["cf_bypass_pages"]                  = 0;
             $config["cf_bypass_home"]                   = 0;
@@ -218,16 +226,21 @@ if( !class_exists('SW_CLOUDFLARE_PAGECACHE') ) {
             $config["cf_varnish_purge_all_method"]      = "PURGE";
 
             // WooCommerce
-            $config["cf_bypass_woo_shop_page"]          = 0;
-            $config["cf_bypass_woo_pages"]              = 0;
-            $config["cf_bypass_woo_product_tax_page"]   = 0;
-            $config["cf_bypass_woo_product_tag_page"]   = 0;
-            $config["cf_bypass_woo_product_cat_page"]   = 0;
-            $config["cf_bypass_woo_product_page"]       = 0;
-            $config["cf_bypass_woo_cart_page"]          = 1;
-            $config["cf_bypass_woo_checkout_page"]      = 1;
-            $config["cf_bypass_woo_checkout_pay_page"]  = 1;
-            $config["cf_auto_purge_woo_product_page"]   = 1;
+            $config["cf_bypass_woo_shop_page"]           = 0;
+            $config["cf_bypass_woo_pages"]               = 0;
+            $config["cf_bypass_woo_product_tax_page"]    = 0;
+            $config["cf_bypass_woo_product_tag_page"]    = 0;
+            $config["cf_bypass_woo_product_cat_page"]    = 0;
+            $config["cf_bypass_woo_product_page"]        = 0;
+            $config["cf_bypass_woo_cart_page"]           = 1;
+            $config["cf_bypass_woo_checkout_page"]       = 1;
+            $config["cf_bypass_woo_checkout_pay_page"]   = 1;
+            $config["cf_auto_purge_woo_product_page"]    = 1;
+            $config["cf_auto_purge_woo_scheduled_sales"] = 1;
+
+            // Swift Performance Lite
+            $config["cf_spl_purge_on_flush_all"]           = 1;
+            $config["cf_spl_purge_on_flush_single_post"]   = 1;
 
             // W3TC
             $config["cf_w3tc_purge_on_flush_minfy"]         = 0;
@@ -238,12 +251,20 @@ if( !class_exists('SW_CLOUDFLARE_PAGECACHE') ) {
             $config["cf_w3tc_purge_on_flush_all"]           = 1;
 
             // WP Rocket
-            $config["cf_wp_rocket_purge_on_post_flush"]     = 1;
-            $config["cf_wp_rocket_purge_on_domain_flush"]   = 1;
-            $config["cf_wp_rocket_disable_cache"]           = 1;
+            $config["cf_wp_rocket_purge_on_post_flush"]               = 1;
+            $config["cf_wp_rocket_purge_on_domain_flush"]             = 1;
+            $config["cf_wp_rocket_purge_on_cache_dir_flush"]          = 1;
+            $config["cf_wp_rocket_purge_on_clean_files"]              = 1;
+            $config["cf_wp_rocket_purge_on_clean_cache_busting"]      = 1;
+            $config["cf_wp_rocket_purge_on_clean_minify"]             = 1;
+            $config["cf_wp_rocket_purge_on_ccss_generation_complete"] = 1;
 
             // Litespeed Cache
-            $config["cf_litespeed_purge_on_cache_flush"] = 1;
+            $config["cf_litespeed_purge_on_cache_flush"]        = 1;
+            $config["cf_litespeed_purge_on_ccss_flush"]         = 1;
+            $config["cf_litespeed_purge_on_cssjs_flush"]        = 1;
+            $config["cf_litespeed_purge_on_object_cache_flush"] = 1;
+            $config["cf_litespeed_purge_on_single_post_flush"]  = 1;
 
             // Hummingbird
             $config["cf_hummingbird_purge_on_cache_flush"] = 1;
@@ -260,6 +281,12 @@ if( !class_exists('SW_CLOUDFLARE_PAGECACHE') ) {
             // Autoptimize
             $config["cf_autoptimize_purge_on_cache_flush"] = 1;
 
+            // WP Asset Clean Up
+            $config["cf_nginx_helper_purge_on_cache_flush"] = 1;
+
+            // WP Performance
+            $config["cf_wp_performance_purge_on_cache_flush"] = 1;
+
             // EDD
             $config["cf_bypass_edd_checkout_page"]         = 1;
             $config["cf_bypass_edd_success_page"]          = 0;
@@ -268,15 +295,31 @@ if( !class_exists('SW_CLOUDFLARE_PAGECACHE') ) {
             $config["cf_bypass_edd_login_redirect_page"]   = 1;
             $config["cf_auto_purge_edd_payment_add"]       = 1;
 
+            // WP Engine
+            $config["cf_wpengine_purge_on_flush"] = 0;
+
+            // SpinupWP
+            $config["cf_spinupwp_purge_on_flush"] = 0;
+
+            // Kinsta
+            $config["cf_kinsta_purge_on_flush"] = 0;
+
+            // Siteground
+            $config["cf_siteground_purge_on_flush"] = 0;
+
             // Logs
             $config["log_enabled"] = 1;
             $config["log_max_file_size"] = 2; // Megabytes
+            $config["log_verbosity"] = SWCFPC_LOGS_STANDARD_VERBOSITY;
 
             // Other
             $config["cf_remove_purge_option_toolbar"] = 0;
             $config["cf_disable_single_metabox"] = 1;
             $config["cf_seo_redirect"] = 0;
             $config["cf_opcache_purge_on_flush"] = 0;
+            $config["cf_object_cache_purge_on_flush"] = 0;
+            $config["cf_purge_roles"] = array();
+            $config["cf_prefetch_urls_viewport"] = 0;
 
             return $config;
 
@@ -352,181 +395,330 @@ if( !class_exists('SW_CLOUDFLARE_PAGECACHE') ) {
                     $installer = new SWCFPC_Installer();
                     $installer->start();
                 }
+                else {
 
-                if( version_compare( $current_version, "4.2.4", "<") ) {
+                    if( version_compare( $current_version, "4.3.5", "<") ) {
 
-                    $this->set_single_config("cf_preloader_nav_menus", array());
-                    $this->set_single_config("cf_wp_rocket_disable_cache", 0);
-                    $this->set_single_config("cf_wp_optimize_purge_on_cache_flush", 0);
-                    $this->set_single_config("cf_cache_enabler_purge_on_cache_flush", 0);
+                        $cf_fallback_cache_excluded_cookies = $this->get_single_config("cf_fallback_cache_excluded_cookies", array());
 
-                }
+                        if( !is_array($cf_fallback_cache_excluded_cookies) )
+                            $cf_fallback_cache_excluded_cookies = array("^wordpress_logged_in_", "^wp-", "^comment_", "^woocommerce_", "^wordpressuser_", "^wordpresspass_", "^wordpress_sec_");
+                        else
+                            array_push($cf_fallback_cache_excluded_cookies, "^wordpressuser_", "^wordpresspass_", "^wordpress_sec_");
 
-                if( version_compare( $current_version, "4.3.0", "<") || version_compare( $current_version, "4.3.1", "<") ) {
+                        $this->set_single_config("cf_fallback_cache_excluded_cookies", $cf_fallback_cache_excluded_cookies);
+                        $this->set_single_config("cf_bypass_edd_checkout_page", 1);
+                        $this->set_single_config("cf_bypass_edd_login_redirect_page", 1);
+                        $this->set_single_config("cf_bypass_edd_purchase_history_page", 1);
+                        $this->set_single_config("cf_bypass_edd_success_page", 0);
+                        $this->set_single_config("cf_bypass_edd_failure_page", 0);
+                        $this->set_single_config("cf_auto_purge_edd_payment_add", 1);
 
-                    if( defined('SWCFPC_ADVANCED_CACHE') ) {
-
-                        if ( count($this->objects) == 0 )
-                            $this->include_libs();
-
-                        $this->objects["fallback_cache"]->fallback_cache_advanced_cache_disable();
-                        $this->objects["fallback_cache"]->fallback_cache_advanced_cache_enable();
-
-                    }
-
-                }
-
-                if(  version_compare( $current_version, "4.3.2", "<") ) {
-
-                    $this->set_single_config("cf_seo_redirect", 1);
-                    $this->set_single_config("cf_preload_sitemap_urls", array());
-                    $this->set_single_config("cf_fallback_cache_excluded_urls", array());
-                    $this->set_single_config("cf_varnish_support", 0);
-                    $this->set_single_config("cf_varnish_auto_purge", 0);
-                    $this->set_single_config("cf_preloader", 1);
-
-                    if( defined('SWCFPC_ADVANCED_CACHE') ) {
-
-                        if ( count($this->objects) == 0 )
-                            $this->include_libs();
-
-                        $this->objects["fallback_cache"]->fallback_cache_purge_all();
-                        $this->objects["fallback_cache"]->fallback_cache_advanced_cache_disable();
-                        $this->objects["fallback_cache"]->fallback_cache_advanced_cache_enable();
-
-                    }
-
-                }
-
-                if( version_compare( $current_version, "4.3.3", "<") ) {
-
-                    $this->set_single_config("cf_bypass_backend_page_rule", 0);
-                    $this->set_single_config("cf_bypass_backend_page_rule_id", "");
-                    $this->set_single_config("cf_wpacu_purge_on_cache_flush", 0);
-
-                }
-
-                if( version_compare( $current_version, "4.3.4", "<") ) {
-
-                    $this->set_single_config("cf_autoptimize_purge_on_cache_flush", 1);
-                    $this->set_single_config("cf_disable_cache_buster", 0);
-                    $this->set_single_config("cf_fallback_cache_excluded_cookies", array("wordpress_logged_in_", "wp-", "comment_", "woocommerce_"));
-                    $this->set_single_config("cf_fallback_cache_save_headers", 0);
-                    $this->set_single_config("cf_preload_excluded_post_types", array("attachment", "jet-menu", "elementor_library", "jet-theme-core"));
-                    $this->set_single_config("log_max_file_size", 2);
-                    $this->set_single_config("cf_auto_purge_woo_product_page", 1);
-
-                    $cf_excluded_urls = $this->get_single_config("cf_excluded_urls", array());
-
-                    if( !is_array($cf_excluded_urls) )
-                        $cf_excluded_urls = array();
-
-                    $cf_excluded_urls[] = "/*ao_noptirocket*";
-
-                    $this->set_single_config("cf_excluded_urls", $cf_excluded_urls);
-
-                    // If fallback cache via advanced-cache.php is active, disable and re-enable the cache
-                    if( defined('SWCFPC_ADVANCED_CACHE') ) {
-
-                        if ( count($this->objects) == 0 )
-                            $this->include_libs();
-
-                        $this->objects["fallback_cache"]->fallback_cache_advanced_cache_disable();
-                        $this->objects["fallback_cache"]->fallback_cache_purge_all();
-                        $this->objects["fallback_cache"]->fallback_cache_advanced_cache_enable();
-
-                    }
-
-                }
-
-                if( version_compare( $current_version, "4.3.4.2", "<") ) {
-
-                    $cf_excluded_urls = $this->get_single_config("cf_excluded_urls", array());
-
-                    if( !is_array($cf_excluded_urls) ) {
-                        $cf_excluded_urls = array();
-                        $this->set_single_config("cf_excluded_urls", $cf_excluded_urls);
                         $this->update_config();
+
+                        // If fallback cache via advanced-cache.php is active, disable and re-enable the cache
+                        if( defined('SWCFPC_ADVANCED_CACHE') ) {
+
+                            if ( count($this->objects) == 0 )
+                                $this->include_libs();
+
+                            $this->objects["fallback_cache"]->fallback_cache_advanced_cache_disable();
+                            $this->objects["fallback_cache"]->fallback_cache_advanced_cache_enable(true);
+
+                        }
+
                     }
 
-                }
+                    if( version_compare( $current_version, "4.3.6", "<") ) {
 
+                        $cf_excluded_urls = $this->get_single_config("cf_excluded_urls", array());
 
-                if( version_compare( $current_version, "4.3.4.4", "<") ) {
+                        if( !is_array($cf_excluded_urls) ) {
+                            $cf_excluded_urls = array("/*ao_noptirocket*", "/*jetpack=comms*");
+                            $this->set_single_config("cf_excluded_urls", $cf_excluded_urls);
+                        }
 
-                    $cf_excluded_urls = $this->get_single_config("cf_excluded_urls", array());
+                        $this->update_config();
 
-                    if( !is_array($cf_excluded_urls) ) {
-                        $cf_excluded_urls = array();
-                        $this->set_single_config("cf_excluded_urls", $cf_excluded_urls);
                     }
 
-                    if( !in_array("/*jetpack=comms*", $cf_excluded_urls) ) {
-                        $cf_excluded_urls[] = "/*jetpack=comms*";
-                        $this->set_single_config("cf_excluded_urls", $cf_excluded_urls);
-                    }
-
-                    $this->update_config();
-
-                    // If fallback cache via advanced-cache.php is active, disable and re-enable the cache
-                    if( defined('SWCFPC_ADVANCED_CACHE') ) {
+                    if( version_compare( $current_version, "4.3.7", "<") ) {
 
                         if ( count($this->objects) == 0 )
                             $this->include_libs();
 
-                        $this->objects["fallback_cache"]->fallback_cache_advanced_cache_disable();
-                        $this->objects["fallback_cache"]->fallback_cache_advanced_cache_enable();
+                        $this->objects["logs"]->add_log("swcfpc::update_plugin", "Updating to v4.3.7");
+
+                        $this->set_single_config("cf_worker_bypass_cookies", array());
+                        $this->set_single_config("cf_object_cache_purge_on_flush", 0);
+                        $this->set_single_config("cf_purge_roles", array());
+                        $this->set_single_config("cf_nginx_helper_purge_on_cache_flush", 1);
+                        $this->set_single_config("cf_fallback_cache_prevent_cache_urls_without_trailing_slash", 1);
+
+                        $this->update_config();
+
+                        add_action("shutdown", function() {
+
+                            global $sw_cloudflare_pagecache;
+
+                            $objects = $sw_cloudflare_pagecache->get_objects();
+
+                            if( defined('SWCFPC_ADVANCED_CACHE') ) {
+
+                                $objects["fallback_cache"]->fallback_cache_advanced_cache_disable();
+                                $objects["fallback_cache"]->fallback_cache_advanced_cache_enable(true);
+
+                            }
+
+                            $objects["logs"]->add_log("swcfpc::update_plugin", "Update to v4.3.7 complete");
+
+                        }, PHP_INT_MAX);
 
                     }
 
-                }
+                    if( version_compare( $current_version, "4.3.7.2", "<") ) {
 
-                if( version_compare( $current_version, "4.3.5", "<") ) {
+                        add_action("shutdown", function() {
 
-                    $cf_fallback_cache_excluded_cookies = $this->get_single_config("cf_fallback_cache_excluded_cookies", array());
+                            global $sw_cloudflare_pagecache;
 
-                    if( !is_array($cf_fallback_cache_excluded_cookies) )
-                        $cf_fallback_cache_excluded_cookies = array("wordpress_logged_in_", "wp-", "comment_", "woocommerce_", "wordpressuser_", "wordpresspass_", "wordpress_sec_");
-                    else
-                        array_push($cf_fallback_cache_excluded_cookies, "wordpressuser_", "wordpresspass_", "wordpress_sec_");
+                            $objects = $sw_cloudflare_pagecache->get_objects();
 
-                    $this->set_single_config("cf_fallback_cache_excluded_cookies", $cf_fallback_cache_excluded_cookies);
-                    $this->set_single_config("cf_bypass_edd_checkout_page", 1);
-                    $this->set_single_config("cf_bypass_edd_login_redirect_page", 1);
-                    $this->set_single_config("cf_bypass_edd_purchase_history_page", 1);
-                    $this->set_single_config("cf_bypass_edd_success_page", 0);
-                    $this->set_single_config("cf_bypass_edd_failure_page", 0);
-                    $this->set_single_config("cf_auto_purge_edd_payment_add", 1);
+                            $objects["logs"]->add_log("swcfpc::update_plugin", "Updating to v4.3.7.2");
 
-                    $this->update_config();
+                            if( $sw_cloudflare_pagecache->get_single_config("cf_woker_enabled", 0) > 0 ) {
 
-                    // If fallback cache via advanced-cache.php is active, disable and re-enable the cache
-                    if( defined('SWCFPC_ADVANCED_CACHE') ) {
+                                $error_msg_cf = "";
+
+                                $objects["cloudflare"]->disable_page_cache($error_msg_cf);
+                                $objects["cloudflare"]->enable_page_cache($error_msg_cf);
+
+                            }
+
+                            $objects["logs"]->add_log("swcfpc::update_plugin", "Update to v4.3.7.2 complete");
+
+                        }, PHP_INT_MAX);
+
+                    }
+
+                    if( version_compare( $current_version, "4.3.7.4", "<") ) {
+
+                        add_action("shutdown", function() {
+
+                            global $sw_cloudflare_pagecache;
+
+                            $objects = $sw_cloudflare_pagecache->get_objects();
+
+                            $objects["logs"]->add_log("swcfpc::update_plugin", "Updating to v4.3.7.4");
+
+                            if( $sw_cloudflare_pagecache->get_single_config("cf_woker_enabled", 0) > 0 ) {
+
+                                $error_msg_cf = "";
+
+                                if( defined('SWCFPC_ADVANCED_CACHE') ) {
+
+                                    $objects["fallback_cache"]->fallback_cache_advanced_cache_disable();
+                                    $objects["fallback_cache"]->fallback_cache_advanced_cache_enable(true);
+
+                                }
+
+                                $objects["cloudflare"]->disable_page_cache($error_msg_cf);
+                                $objects["cloudflare"]->enable_page_cache($error_msg_cf);
+
+                            }
+
+                            $objects["logs"]->add_log("swcfpc::update_plugin", "Update to v4.3.7.4 complete");
+
+                        }, PHP_INT_MAX);
+
+                    }
+
+                    if( version_compare( $current_version, "4.3.8", "<") ) {
 
                         if ( count($this->objects) == 0 )
                             $this->include_libs();
 
-                        $this->objects["fallback_cache"]->fallback_cache_advanced_cache_disable();
-                        $this->objects["fallback_cache"]->fallback_cache_advanced_cache_enable(true);
+                        $this->objects["logs"]->add_log("swcfpc::update_plugin", "Updating to v4.3.8");
+
+                        $cf_excluded_urls = $this->get_single_config("cf_excluded_urls", array());
+
+                        if( is_array($cf_excluded_urls) && !in_array("/*jetpack=comms*", $cf_excluded_urls) ) {
+                            $cf_excluded_urls[] = "/*jetpack=comms*";
+                            $this->set_single_config("cf_excluded_urls", $cf_excluded_urls);
+                        }
+
+                        $this->set_single_config("cf_wpengine_purge_on_flush", 0);
+                        $this->set_single_config("cf_spinupwp_purge_on_flush", 0);
+                        $this->set_single_config("cf_kinsta_purge_on_flush", 0);
+                        $this->set_single_config("cf_siteground_purge_on_flush", 0);
+                        $this->set_single_config("log_verbosity", SWCFPC_LOGS_STANDARD_VERBOSITY);
+
+                        $this->update_config();
+
+                        add_action("shutdown", function() {
+
+                            global $sw_cloudflare_pagecache;
+
+                            $objects = $sw_cloudflare_pagecache->get_objects();
+
+                            if( defined('SWCFPC_ADVANCED_CACHE') ) {
+
+                                $objects["fallback_cache"]->fallback_cache_advanced_cache_disable();
+                                $objects["fallback_cache"]->fallback_cache_advanced_cache_enable(true);
+
+                            }
+
+                            if( $sw_cloudflare_pagecache->get_single_config("cf_woker_enabled", 0) > 0 ) {
+
+                                $error_msg_cf = "";
+
+                                $objects["cloudflare"]->disable_page_cache($error_msg_cf);
+                                $objects["cloudflare"]->enable_page_cache($error_msg_cf);
+
+                            }
+
+                            $objects["logs"]->add_log("swcfpc::update_plugin", "Update to v4.3.8 complete");
+
+                        }, PHP_INT_MAX);
+
+                    }
+
+                    if( version_compare( $current_version, "4.3.9", "<") ) {
+
+                        if ( count($this->objects) == 0 )
+                            $this->include_libs();
+
+                        $this->objects["logs"]->add_log("swcfpc::update_plugin", "Updating to v4.3.9");
+
+                        $this->set_single_config("cf_wp_performance_purge_on_cache_flush", 1);
+                        $this->set_single_config("cf_wp_rocket_purge_on_cache_dir_flush", 1);
+                        $this->set_single_config("cf_wp_rocket_purge_on_clean_files", 1);
+                        $this->set_single_config("cf_wp_rocket_purge_on_clean_cache_busting", 1);
+                        $this->set_single_config("cf_wp_rocket_purge_on_clean_minify", 1);
+                        $this->set_single_config("cf_wp_rocket_purge_on_ccss_generation_complete", 1);
+                        $this->set_single_config("cf_auto_purge_woo_scheduled_sales", 1);
+                        $this->set_single_config("cf_spl_purge_on_flush_all", 1);
+                        $this->set_single_config("cf_spl_purge_on_flush_single_post", 1);
+                        $this->set_single_config("cf_prefetch_urls_viewport", 0);
+                        $this->set_single_config("cf_purge_only_html", 0);
+                        $this->set_single_config("cf_disable_cache_purging_queue", 0);
+                        $this->update_config();
+
+                        add_action("shutdown", function() {
+
+                            global $sw_cloudflare_pagecache;
+
+                            $objects = $sw_cloudflare_pagecache->get_objects();
+
+                            if( $sw_cloudflare_pagecache->get_single_config("cf_woker_enabled", 0) > 0 ) {
+
+                                $error_msg_cf = "";
+
+                                $objects["cloudflare"]->disable_page_cache($error_msg_cf);
+                                $objects["cloudflare"]->enable_page_cache($error_msg_cf);
+
+                            }
+
+                            $objects["logs"]->add_log("swcfpc::update_plugin", "Update to v4.3.9 complete");
+
+                        }, PHP_INT_MAX);
+
+                    }
+
+                    if( version_compare( $current_version, "4.3.9.2", "<") ) {
+
+                        if ( count($this->objects) == 0 )
+                            $this->include_libs();
+
+                        $this->objects["logs"]->add_log("swcfpc::update_plugin", "Updating to v4.3.9.2");
+
+                        if( $this->get_single_config("cf_maxage", 0) == 604800 )
+                            $this->set_single_config("cf_maxage", 31536000);
+
+                        $cf_fallback_cache_excluded_cookies = $this->get_single_config("cf_fallback_cache_excluded_cookies", array());
+
+                        if( is_array($cf_fallback_cache_excluded_cookies) ) {
+
+                            if( ($key = array_search("wordpress_logged_in_", $cf_fallback_cache_excluded_cookies)) !== false ) {
+                                unset($cf_fallback_cache_excluded_cookies[$key]);
+                            }
+
+                            if( ($key = array_search("wp-", $cf_fallback_cache_excluded_cookies)) !== false ) {
+                                unset($cf_fallback_cache_excluded_cookies[$key]);
+                            }
+
+                            if( ($key = array_search("comment_", $cf_fallback_cache_excluded_cookies)) !== false ) {
+                                unset($cf_fallback_cache_excluded_cookies[$key]);
+                            }
+
+                            if( ($key = array_search("woocommerce_", $cf_fallback_cache_excluded_cookies)) !== false ) {
+                                unset($cf_fallback_cache_excluded_cookies[$key]);
+                            }
+
+                            if( ($key = array_search("wordpressuser_", $cf_fallback_cache_excluded_cookies)) !== false ) {
+                                unset($cf_fallback_cache_excluded_cookies[$key]);
+                            }
+
+                            if( ($key = array_search("wordpresspass_", $cf_fallback_cache_excluded_cookies)) !== false ) {
+                                unset($cf_fallback_cache_excluded_cookies[$key]);
+                            }
+
+                            if( ($key = array_search("wordpress_sec_", $cf_fallback_cache_excluded_cookies)) !== false ) {
+                                unset($cf_fallback_cache_excluded_cookies[$key]);
+                            }
+
+                            $cf_fallback_cache_excluded_cookies[] = "^wordpress_logged_in_";
+                            $cf_fallback_cache_excluded_cookies[] = "^wp-";
+                            $cf_fallback_cache_excluded_cookies[] = "^comment_";
+                            $cf_fallback_cache_excluded_cookies[] = "^woocommerce_";
+                            $cf_fallback_cache_excluded_cookies[] = "^wordpressuser_";
+                            $cf_fallback_cache_excluded_cookies[] = "^wordpresspass_";
+                            $cf_fallback_cache_excluded_cookies[] = "^wordpress_sec_";
+
+                            $this->set_single_config("cf_fallback_cache_excluded_cookies", $cf_fallback_cache_excluded_cookies);
+
+                        }
+
+                        $cf_excluded_urls = $this->get_single_config("cf_excluded_urls", array());
+
+                        if( is_array($cf_excluded_urls) ) {
+
+                            if( !in_array("/*kinsta-monitor*", $cf_excluded_urls) )
+                                $cf_excluded_urls[] = "/*kinsta-monitor*";
+
+                            if( !in_array("*ao_speedup_cachebuster*", $cf_excluded_urls) )
+                                $cf_excluded_urls[] = "*ao_speedup_cachebuster*";
+
+                            $this->set_single_config("cf_excluded_urls", $cf_excluded_urls);
+
+                        }
+
+                        $this->set_single_config("cf_litespeed_purge_on_ccss_flush", 1);
+                        $this->set_single_config("cf_litespeed_purge_on_cssjs_flush", 1);
+                        $this->set_single_config("cf_litespeed_purge_on_object_cache_flush", 1);
+                        $this->set_single_config("cf_litespeed_purge_on_single_post_flush", 1);
+                        $this->update_config();
+
+                        add_action("shutdown", function() {
+
+                            global $sw_cloudflare_pagecache;
+
+                            $objects = $sw_cloudflare_pagecache->get_objects();
+
+                            if( defined('SWCFPC_ADVANCED_CACHE') ) {
+
+                                $objects["fallback_cache"]->fallback_cache_advanced_cache_disable();
+                                $objects["fallback_cache"]->fallback_cache_advanced_cache_enable(true);
+
+                            }
+
+                            $this->objects["logs"]->add_log("swcfpc::update_plugin", "Update to v4.3.9.2 complete");
+
+                        }, PHP_INT_MAX);
 
                     }
 
                 }
-
-
-                if( version_compare( $current_version, "4.3.6", "<") ) {
-
-                    $cf_excluded_urls = $this->get_single_config("cf_excluded_urls", array());
-
-                    if( !is_array($cf_excluded_urls) ) {
-                        $cf_excluded_urls = array("/*ao_noptirocket*", "/*jetpack=comms*");
-                        $this->set_single_config("cf_excluded_urls", $cf_excluded_urls);
-                    }
-
-                    $this->update_config();
-
-                }
-
 
             }
 
@@ -537,6 +729,7 @@ if( !class_exists('SW_CLOUDFLARE_PAGECACHE') ) {
 
         function deactivate_plugin() {
             $this->objects["cache_controller"]->reset_all();
+            $this->delete_plugin_wp_content_directory();
         }
 
 
@@ -630,7 +823,7 @@ if( !class_exists('SW_CLOUDFLARE_PAGECACHE') ) {
             if( defined('SWCFPC_CF_WOKER_ID') )
                 return SWCFPC_CF_WOKER_ID;
 
-            return $this->get_single_config("cf_woker_id", "swcfpc_worker");
+            return $this->get_single_config("cf_woker_id", "swcfpc_worker_".time());
 
         }
 
@@ -677,18 +870,65 @@ if( !class_exists('SW_CLOUDFLARE_PAGECACHE') ) {
         }
 
 
+        function get_plugin_wp_content_directory_uri() {
+
+            $parts = parse_url( home_url() );
+
+            return str_replace( array("https://".$parts['host'], "http://".$parts['host']), "", content_url('wp-cloudflare-super-page-cache/'.$parts['host']) );
+
+        }
+
+
         function create_plugin_wp_content_directory() {
 
             $parts = parse_url( home_url() );
             $path = WP_CONTENT_DIR . '/wp-cloudflare-super-page-cache/';
 
-            if( ! file_exists( $path ) )
-                wp_mkdir_p( $path, 0755 );
+            if( ! file_exists( $path ) && wp_mkdir_p($path, 0755) ) {
+                file_put_contents($path."index.php", "<?php // Silence is golden");
+            }
 
             $path .= $parts['host'];
 
-            if( ! file_exists( $path ) )
-                wp_mkdir_p( $path, 0755 );
+            if( ! file_exists( $path ) && wp_mkdir_p( $path, 0755 ) ) {
+                file_put_contents($path."/index.php", "<?php // Silence is golden");
+            }
+
+        }
+
+
+        function delete_plugin_wp_content_directory() {
+
+            $parts = parse_url( home_url() );
+            $path = WP_CONTENT_DIR . '/wp-cloudflare-super-page-cache/';
+            $path .= $parts['host'];
+
+            if( file_exists( $path ) )
+                $this->delete_directory_recursive( $path );
+
+        }
+
+
+        function delete_directory_recursive($dir) {
+
+            if( !class_exists('RecursiveDirectoryIterator') || !class_exists('RecursiveIteratorIterator') )
+                return false;
+
+            $it    = new RecursiveDirectoryIterator($dir, RecursiveDirectoryIterator::SKIP_DOTS);
+            $files = new RecursiveIteratorIterator($it,RecursiveIteratorIterator::CHILD_FIRST);
+
+            foreach($files as $file) {
+
+                if ($file->isDir())
+                    rmdir($file->getRealPath());
+                else
+                    unlink($file->getRealPath());
+
+            }
+
+            rmdir($dir);
+
+            return true;
 
         }
 
@@ -724,14 +964,14 @@ if( !class_exists('SW_CLOUDFLARE_PAGECACHE') ) {
         function get_second_level_domain() {
 
             $matches = array();
-            $url = site_url();
+            $url = home_url();
 
             // Remove trailing slash
             if( substr($url, -1) == "/" )
                 $url = substr($url, 0, -1);
 
             $url = str_replace(array("http://", "https://"), "", $url);
-            $result = preg_match("#[^.]*\.[^.]{2,3}(?:\.[^.]{2,3})?$#", site_url(), $matches);
+            $result = preg_match("#[^.]*\.[^.]{2,3}(?:\.[^.]{2,3})?$#", $url, $matches);
 
             if( $result == 0 || $result === false || !is_array($matches) || count($matches) == 0 )
                 return "";
@@ -753,6 +993,114 @@ if( !class_exists('SW_CLOUDFLARE_PAGECACHE') ) {
 
 
             }
+
+        }
+
+
+        function can_current_user_purge_cache() {
+
+            if( !is_user_logged_in() )
+                return false;
+
+            if( current_user_can('manage_options') )
+                return true;
+
+            $allowed_roles = $this->get_single_config("cf_purge_roles", array());
+
+            if( count($allowed_roles) > 0 ) {
+
+                $user = wp_get_current_user();
+
+                foreach($allowed_roles as $role_name) {
+
+                    if ( in_array($role_name, (array)$user->roles) )
+                        return true;
+
+                }
+
+            }
+
+            return false;
+
+        }
+
+
+        function get_wordpress_roles() {
+
+            global $wp_roles;
+            $wordpress_roles = array();
+
+            foreach( $wp_roles->roles as $role => $role_data )
+                $wordpress_roles[] = $role;
+
+            return $wordpress_roles;
+
+        }
+
+
+        function does_current_url_have_trailing_slash() {
+
+            if( !preg_match("/\/$/", $_SERVER["REQUEST_URI"]) )
+                return false;
+
+            return true;
+
+        }
+
+
+        function is_api_request() {
+
+            // Wordpress standard API
+            if( (defined('REST_REQUEST') && REST_REQUEST) )
+                return true;
+
+            // WooCommerce standard API
+            if( strcasecmp( substr($_SERVER['REQUEST_URI'], 0, 8), "/wc-api/" ) == 0 )
+                return true;
+
+            // WooCommerce standard API
+            if( strcasecmp( substr($_SERVER['REQUEST_URI'], 0, 9), "/edd-api/" ) == 0 )
+                return true;
+
+            return false;
+
+        }
+
+
+        function wildcard_match($pattern, $subject) {
+
+            $pattern='#^'.preg_quote($pattern).'$#i'; // Case insensitive
+            $pattern=str_replace('\*', '.*', $pattern);
+            //$pattern=str_replace('\.', '.', $pattern);
+
+            if(!preg_match($pattern, $subject, $regs))
+                return false;
+
+            return true;
+
+        }
+
+
+        function get_current_lang_code() {
+
+            $current_language_code = false;
+
+            if( has_filter('wpml_current_language') )
+                $current_language_code = apply_filters( 'wpml_current_language', null );
+
+            return $current_language_code;
+
+        }
+
+
+        function get_permalink($post_id) {
+
+            $url = get_the_permalink( $post_id );
+
+            if( has_filter('wpml_permalink') )
+                $url = apply_filters( 'wpml_permalink', $url , $this->get_current_lang_code() );
+
+            return $url;
 
         }
 

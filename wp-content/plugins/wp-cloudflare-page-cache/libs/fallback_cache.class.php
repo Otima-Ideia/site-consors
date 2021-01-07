@@ -149,7 +149,7 @@ class SWCFPC_Fallback_Cache
 
             $this->fallback_cache_delete_config();
 
-            if( defined('WP_CACHE') )
+            if( !is_multisite() && defined('WP_CACHE') )
                 $this->fallback_cache_add_define_cache_wp_config( false );
 
             $this->fallback_cache_purge_all();
@@ -211,7 +211,7 @@ class SWCFPC_Fallback_Cache
         $constant = "define('WP_CACHE', $turn_it_on); // Added by WP Cloudflare Super Page Cache";
         $last_line = "";
 
-        for($i=0; $i<$config_file_count; $i++) {
+        for($i=0; $i<$config_file_count; ++$i) {
 
             // Remove double empty line
             if( $i>0 && trim($config_file[$i]) == "" && $last_line == "" ) {
@@ -256,7 +256,7 @@ class SWCFPC_Fallback_Cache
         $config_file = array_values( $config_file );
         $config_file_count = count( $config_file );
 
-        for($i=0; $i<$config_file_count; $i++) {
+        for($i=0; $i<$config_file_count; ++$i) {
 
             $line = trim($config_file[$i]);
 
@@ -473,10 +473,14 @@ class SWCFPC_Fallback_Cache
 
         $cache_key = str_replace( $replacements, "_", $this->fallback_cache_remove_url_parameters($current_uri) );
 
+        // Fix error fnmatch(): Filename exceeds the maximum allowed length
+        $cache_key = sha1( $cache_key );
+
+        /*
         if( strlen($cache_key) > 250 ) {
             $cache_key = substr($cache_key, 0, -32);
             $cache_key .= md5( $current_uri );
-        }
+        }*/
 
         $cache_key .= ".html";
 
@@ -489,8 +493,9 @@ class SWCFPC_Fallback_Cache
 
         $cache_path = $this->main_instance->get_plugin_wp_content_directory()."/fallback_cache/";
 
-        if( ! file_exists($cache_path) )
-            wp_mkdir_p( $cache_path );
+        if( ! file_exists($cache_path) && wp_mkdir_p($cache_path) ) {
+            file_put_contents($cache_path . "index.php", "<?php // Silence is golden");
+        }
 
         return $cache_path;
 
@@ -526,7 +531,7 @@ class SWCFPC_Fallback_Cache
         if( is_array($value) )
             $this->fallback_cache_ttl_registry[trim($name)] = $value;
         else
-            $this->fallback_cache_ttl_registry[trim($name)] = intval($value);
+            $this->fallback_cache_ttl_registry[trim($name)] = (int) $value;
 
     }
 
@@ -539,7 +544,7 @@ class SWCFPC_Fallback_Cache
         if( is_array($this->fallback_cache_ttl_registry[$name]))
             return $this->fallback_cache_ttl_registry[$name];
 
-        return intval($this->fallback_cache_ttl_registry[$name]);
+        return (int) $this->fallback_cache_ttl_registry[$name];
 
     }
 
@@ -632,7 +637,13 @@ class SWCFPC_Fallback_Cache
         $cache_path  = $this->fallback_cache_init_directory();
         $cache_key   = $this->fallback_cache_get_current_page_cache_key();
 
+        if( $this->main_instance->get_single_config("cf_fallback_cache_prevent_cache_urls_without_trailing_slash", 1) > 0 && $this->main_instance->does_current_url_have_trailing_slash() == false )
+            return false;
+
         if( $this->fallback_cache_is_cookie_to_exclude() )
+            return false;
+
+        if( $this->fallback_cache_is_cookie_to_exclude_cf_worker() )
             return false;
 
         if( file_exists($cache_path.$cache_key) && !$this->fallback_cache_is_expired_page( $cache_key ) ) {
@@ -652,6 +663,7 @@ class SWCFPC_Fallback_Cache
             header("X-WP-CF-Super-Cache-Active: 1");
             header("X-WP-CF-Fallback-Cache: 1");
             header('X-WP-CF-Super-Cache-Cache-Control: '.$this->objects["cache_controller"]->get_cache_control_value());
+            header('X-WP-CF-Super-Cache-Cookies-Bypass: '.$this->objects["cache_controller"]->get_cookies_to_bypass_in_worker_mode());
 
             if( $stored_headers ) {
 
@@ -677,7 +689,7 @@ class SWCFPC_Fallback_Cache
         $headers_list = headers_list();
         $headers_count = count( $headers_list );
 
-        for( $i=0; $i<$headers_count; $i++ ) {
+        for( $i=0; $i<$headers_count; ++$i ) {
 
             list($header_name, $header_value) = explode(":", $headers_list[$i]);
 
@@ -752,7 +764,37 @@ class SWCFPC_Fallback_Cache
     }
 
 
+    function fallback_cache_is_cookie_to_exclude_cf_worker() {
+
+        if( count($_COOKIE) == 0 )
+            return false;
+
+        if( $this->main_instance->get_single_config("cf_woker_enabled", 0) == 0 )
+            return false;
+
+        $excluded_cookies = $this->main_instance->get_single_config("cf_fallback_cache_excluded_cookies", array());
+
+        if( count($excluded_cookies) == 0 )
+            return false;
+
+        $cookies = array_keys( $_COOKIE );
+
+        foreach ($excluded_cookies as $single_cookie) {
+
+            if( count( preg_grep("#$single_cookie#", $cookies) ) > 0 )
+                return true;
+
+        }
+
+        return false;
+
+    }
+
+
     function fallback_cache_is_url_to_exclude($url=false) {
+
+        if( $this->main_instance->get_single_config("cf_fallback_cache_prevent_cache_urls_without_trailing_slash", 1) > 0 && $this->main_instance->does_current_url_have_trailing_slash() == false )
+            return true;
 
         $excluded_urls = $this->main_instance->get_single_config("cf_fallback_cache_excluded_urls", array());
 
@@ -772,9 +814,14 @@ class SWCFPC_Fallback_Cache
 
             foreach( $excluded_urls as $url_to_exclude ) {
 
+                if( $this->main_instance->wildcard_match($url_to_exclude, $current_url) )
+                    return true;
+
+                /*
                 if( fnmatch($url_to_exclude, $current_url, FNM_CASEFOLD) ) {
                     return true;
                 }
+                */
 
             }
 
